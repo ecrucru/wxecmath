@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  * \file ec_plot.h
  * \brief Includes the area to draw curves
  * \author ecrucru
- * \version 0.6-beta
- * \date summer 2008
+ * \version 0.6.1
+ * \date January 2009
  */
 
 #ifndef ec_plot_h

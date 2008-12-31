@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ class wxInlineFrame : public wxFrame
         EVT_BUTTON(ID_COMPUTE, wxInlineFrame::OnComputeClick)
     END_EVENT_TABLE()
 
-wxInlineFrame::wxInlineFrame() : wxFrame(NULL, wxID_ANY, wxT("Easiest demo"), wxDefaultPosition, wxSize(350,100), wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU|wxTAB_TRAVERSAL)
+wxInlineFrame::wxInlineFrame() : wxFrame(NULL, wxID_ANY, wxT("Simpliest demo"), wxDefaultPosition, wxSize(350,100), wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU|wxTAB_TRAVERSAL)
 {
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
@@ -76,7 +76,7 @@ wxInlineFrame::wxInlineFrame() : wxFrame(NULL, wxID_ANY, wxT("Easiest demo"), wx
     this->Center();
 
     #ifdef __WINDOWS__
-    this->SetBackgroundColour(wxColour(204,204,204));
+    this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     #endif
 }
 

@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,41 +25,40 @@
     #include "wx/wx.h"
 #endif
 
+//------------------------------------------
+
 #include "../../lib/ec_defs.h"
 #include "../../lib/ec_engine.h"
 
-#define SPEED_NUM (long) 150000
+//------------------------------------------
 
-
-class wxInlineDemoApp: public wxApp
+class wxSpeedApp : public wxApp
 {
-    public:
-        virtual bool OnInit();
+	virtual bool OnInit();
 };
 
-    DECLARE_APP(wxInlineDemoApp)
-    IMPLEMENT_APP(wxInlineDemoApp)
+IMPLEMENT_APP(wxSpeedApp)
 
-bool wxInlineDemoApp::OnInit()
+bool wxSpeedApp::OnInit()
 {
     wxApp::OnInit();
 
-    //-- Initializes
-    long i, start, end;
+    //-- Initialization
+    long i, start, end, numcomp=350000;
     double speed;
     wxEcEngine calculator;
     calculator.SetFormula(wxT("(1+sqrt(5))/2-2*cos(2*pi/5)"));    //= 1
 
     //-- Computes
     start = wxGetLocalTime();
-    for (i=0 ; i<SPEED_NUM ; i++)
+    for (i=0 ; i<numcomp ; i++)
         calculator.Compute();
     end = wxGetLocalTime();
 
     //-- Displays the result
     if (end != start)
     {
-        speed = SPEED_NUM / (end-start);
+        speed = numcomp / (end-start);
         wxMessageDialog(NULL, wxString::Format(wxT("%.0f per second"), speed), wxT("Speed"), wxOK).ShowModal();
     }
     return false;

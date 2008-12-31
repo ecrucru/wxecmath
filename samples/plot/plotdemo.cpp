@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -254,7 +254,7 @@ void wxPlotFrame::OnTangentClick(wxCommandEvent& event)
         return;
     }
     if (buffer.BeforeFirst(wxT(':')).ToLong(&index))
-        if (wxGetTextFromUser(wxT("Select the X-coordinate :"), wxT("Draw a tangent"), "0").ToDouble(&Xpos))
+        if (wxGetTextFromUser(wxT("Select the X-coordinate :"), wxT("Draw a tangent"), wxT("0")).ToDouble(&Xpos))
         {
             //wxTheApp->Yield();
             if (!Plot->DrawTangent(index-1, Xpos))

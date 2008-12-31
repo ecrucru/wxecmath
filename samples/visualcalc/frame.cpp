@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -88,6 +88,8 @@
 
 wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -1, wxT("wxEcEngine demo"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL)
 {
+    //---------- Fonts
+
     #ifdef __WINDOWS__
         wxSize ButtonSize = wxSize(35,35);
     #else
@@ -307,7 +309,7 @@ wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -
     ButtonMinus = new wxButton(this, ID_MINUS, wxT("-"), wxDefaultPosition, ButtonSize, 0);
     ButtonMinus->SetForegroundColour(wxColour(0, 0, 255));
 
-        wxButton* GridButtonArray[36] = {    ButtonCall, ButtonSin, ButtonExp, ButtonLn, ButtonBracketOpen, Button7,
+        wxButton* GridButtonArray[36] = {   ButtonCall, ButtonSin, ButtonExp, ButtonLn, ButtonBracketOpen, Button7,
                                             Button8, Button9, ButtonDiv, ButtonSet, ButtonCos, ButtonPow10, ButtonLog,
                                             ButtonBracketClose, Button4, Button5, Button6, ButtonMult, ButtonMP,
                                             ButtonTan, ButtonPower, ButtonSq2, ButtonSqrt, Button1, Button2, Button3,
@@ -387,7 +389,7 @@ wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -
     this->Fit();
     this->Center();
     #ifdef __WINDOWS__
-    this->SetBackgroundColour(wxColour(204,204,204));
+    this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     #endif
     if (RequireCompact)
     {
@@ -507,7 +509,7 @@ void wxCalcFrame::OnMenuPasteClick(wxCommandEvent& event)
 
 void wxCalcFrame::OnMenuDebugClick(wxCommandEvent& event)
 {
-    #ifdef wxECM_USELOG
+    #ifdef wxECM_USEDEBUG
         wxArrayString LogData;
         size_t i;
 
@@ -523,7 +525,7 @@ void wxCalcFrame::OnMenuDebugClick(wxCommandEvent& event)
         DebugDialog->Destroy();
         wxDELETE(DebugDialog);
     #else
-        wxMessageDialog(NULL, wxT("This feature is not available when \"wxECM_USELOG\" is not defined in \"ec_defs.h\"."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
+        wxMessageDialog(NULL, wxT("This feature is not available when \"wxECM_USEDEBUG\" is not defined in \"ec_defs.h\"."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
     #endif
 }
 
@@ -587,10 +589,14 @@ void wxCalcFrame::OnMenuAboutClick(wxCommandEvent& event)
     About.SetName(wxECD_SOFTWARE);
     About.SetIcon(wxIcon(icon_xpm));
     About.SetVersion(wxString::Format(wxT("v%s"), wxECD_VERSION));
-    About.SetCopyright(wxT("Copyright © 2008, ecrucru"));
+    About.SetCopyright(wxT("Copyright © 2008-2009, ecrucru"));
     About.SetDescription(wxT("\nMulti-usage mathematical interpreter\n"));
     About.SetWebSite(wxECD_URL);
-    About.SetLicence(wxString::Format(wxT("Compiled with %s"), wxVERSION_STRING));
+    #if wxUSE_UNICODE
+        About.SetLicence(wxString::Format(wxT("Compiled with %s Unicode."), wxVERSION_STRING));
+    #else
+        About.SetLicence(wxString::Format(wxT("Compiled with %s."), wxVERSION_STRING));
+    #endif
     wxAboutBox(About);
 }
 
@@ -906,7 +912,7 @@ void wxCalcFrame::OnDefClick(wxCommandEvent& event)
     wxString NewConstantName;
 
     Value = Calc->GetLastResult();
-    NewConstantName = wxGetTextFromUser(wxString::Format(wxT("Constant's name for '%f' :"), Value), wxT("(Re)define a constant"), "");
+    NewConstantName = wxGetTextFromUser(wxString::Format(wxT("Constant's name for '%f' :"), Value), wxT("(Re)define a constant"), wxEmptyString);
     if (NewConstantName != wxEmptyString)
     {
         Calc->SetConstant(NewConstantName, Value);

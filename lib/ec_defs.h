@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,9 +28,10 @@
  * mathematical expressions and draw curves. The rich samples provided will help you to
  * set up a new project very quickly.
  *
- * The three main interests of wxEcMath are :
+ * The four main interests of wxEcMath are :
  *      - the ability to evaluate complex expressions with pretty nice performances
  *      - the support of Windows, Linux, Macintosh...
+ *      - the support of ANSI and UNICODE compilations
  *      - the documentation to give you all the clues
  *
  * The intended audience is developers and researchers.
@@ -54,12 +55,14 @@
  * You really need to know wxEcEngine (the calculator) and wxEcPlot (the renderer).
  *
  * To include the library, you just need the header files to be loaded in your workspace
- * and type the following code. All the new names start with the "wxEc" prefix.
+ * and type the following code. All new names start with the "wxEc" prefix.
  * \code
+ *      #define wxECM_USEDEBUG        //read the docs about this feature
  *      #include "ec_defs.h"
  *      #include "ec_engine.h"
  *      #include "ec_plot.h"        //if you need a plot
  * \endcode
+ * \see wxECM_USEDEBUG
  *
  * To perform a simple computation, it is not harder than :
  * \code
@@ -68,8 +71,8 @@
  *      wxEcEngine calc;
  *      calc.SetFormula(wxT("3+4"));
  *      result = calc.Compute();
- *      if (calc.GetLastResult() == wxECE_NOERROR)
- *          ; //perfect !
+ *      if (calc.GetLastError() == wxECE_NOERROR)
+ *          ; //well done !
  *      else
  *          ; //better luck next time !
  *  }
@@ -131,6 +134,7 @@
  *      - parametric : "t+2 ; t/2 $ -pi pi"
  *      - polar : "t $ 0 2*pi"
  *      .
+ *
  * These values must be parsed with wxEcCurve::Parse(), but you can also
  * define a wxEcCurve on your own via the constructor or the methods.
  * \warning If the expression is polar, wxEcCurve::Parse() takes a second parameter !
@@ -154,18 +158,16 @@
 
 /** \page funclist Supported functions
  *
- * The library is able to interpret several functions. Their length can not be longer than 4 characters.
- * Indeed wxEcEngine::Function2ID() converts the name (8 bits per char) into an integer (32 bits).
+ * The library is able to interpret several functions. Their length cannot be longer than 4 characters.
+ * Indeed wxEcEngine::Function2ID() converts the name (8 or 16 bits per char) into an integer (32 bits).
  * We assumed it should be faster to interpret.
- *
- * \warning This can be a problem if you compile the source as \a Unicode !
  *
  * \section normalfuncs Normal functions
  *      - abs : the absolute value, it removes the sign
  *      - ceil : the smallest integer greater than or equal to x
  *      - cub : x^3, safe way to compute such an exponent
  *      - exp : the exponential value
- *      - hvi : Heaviside's function, =0 if x<0, =1 if x>0
+ *      - hvi : Heaviside's function, =0 if x<0, =1 if x>=0
  *      - int : the largest integer less than or equal to x
  *      - inv : inverts, 1/x
  *      - floor : not supported, see \a int
@@ -200,8 +202,8 @@
  * The official download center is SourceForge.net
  *
  * \pre
- *  wxEcMath - version 0.6 beta <br>
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+ *  wxEcMath - version 0.6.1 <br>
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  * \pre
  *  This program is free software; you can redistribute it and/or modify
@@ -227,60 +229,75 @@
  * \file ec_defs.h
  * \brief Definition of the simpliest classes and constants
  * \author ecrucru
- * \version 0.6-beta
- * \date summer 2008
+ * \version 0.6.1
+ * \date January 2009
  *
  * Implements the definition of core elements needed by the wxEcMath classes.
- * Before compiling a release, please take a look to wxECM_USELOG. This can
+ * Before compiling a release, please take a look to wxECM_USEDEBUG. This can
  * increase the performances of your software very significantly.
  */
 
 #ifndef ec_defs_h
 #define ec_defs_h
 
+    #if wxUSE_UNICODE
+        #pragma message("wxEcMath - Compilation mode: UNICODE")
+        #define uniCStr wc_str
+    #else
+        #pragma message("wxEcMath - Compilation mode: ANSI")
+        #define uniCStr c_str
+    #endif
+
 //--------------- MODES --------------------
 
-/** \def wxECM_USELOG
+/** \def wxECM_USEDEBUG
  * When defined, extra features are compiled inside wxEcEngine. They were implemented
  * during the development of wxEcMath to track bugs. For a lambda-user, there is no
- * need to use them (performances would be more than 2 times slower). To turn off/on,
- * add/remove the underscore before the name.
+ * need to use them (performances would be more than 2 times slower).
+ *
+ * You can enable the additional features without editing the library. Just do in your
+ * .cpp code :
+ * \code
+ *      #define  wxECM_USEDEBUG
+ *      #include "ec_defs.h"
+ *      #include "ec_engine.h"
+ * \endcode
  *
  * \see wxEcEngine
  * \see wxEcEngine::LogAction()
  * \see wxEcEngine::GetLog()
  */
-#define        wxECM_USELOG
+//DOXYGEN: #define wxECM_USEDEBUG
 
 //--------------- COPYRIGHT ----------------
 
 /** \def wxECD_SOFTWARE
  * Name of the software.
  */
-#define        wxECD_SOFTWARE               "wxEcMath"
+#define        wxECD_SOFTWARE               wxT("wxEcMath")
 /** \def wxECD_URL
  * Internet address where you can download the software.
  */
-#define        wxECD_URL                    "http://sourceforge.net/projects/wxecmath/"
+#define        wxECD_URL                    wxT("http://sourceforge.net/projects/wxecmath/")
 /** \def wxECD_VERSION
  * Version of the software currently used.
  */
-#define        wxECD_VERSION                "0.6 beta"
+#define        wxECD_VERSION                wxT("0.6.1")
 /** \def wxECD_AVERAGESPEED
  * Average computations you can make in 1 second.
  * Allows you to predict the time needed in complex algorithms.
- * The value depends on \a wxECM_USELOG.
+ * The value depends on \a wxECM_USEDEBUG.
  *
  * \remarks The formula chosen to evaluate the speed is "(1+sqrt(5))/2-2*cos(2*pi/5)".
  * Depending on the length of your formula, you won't get exactly this speed. Maybe more, maybe less.
  * However this value should be representative of most of cases.
  *
- * \see wxECM_USELOG
+ * \see wxECM_USEDEBUG
  */
-#ifdef wxECM_USELOG
+#ifdef wxECM_USEDEBUG
     #define    wxECD_AVERAGESPEED           9000        //per second, arbitrary because the function to evaluate can be complex
 #else
-    #define    wxECD_AVERAGESPEED           22000
+    #define    wxECD_AVERAGESPEED           28000
 #endif
 
 //--------------- ENGINE -------------------
@@ -288,23 +305,26 @@
 /** \def wxECD_OPERATORS
  * All the operators supported, ordered by mathematical priority.
  */
-#define        wxECD_OPERATORS              "^/*-+"
+#define        wxECD_OPERATORS              wxT("^/*-+")
 /** \def wxECD_ALPHABET
  * All the letters of the alphabet, written in lowercase (a-z).
  */
-#define        wxECD_ALPHABET               "abcdefghijklmnopqrstuvwxyz"
+#define        wxECD_ALPHABET               wxT("abcdefghijklmnopqrstuvwxyz")
 /** \def wxECD_NUMERIC
  * All the numbers supported (0-9).
  */
-#define        wxECD_NUMERIC                "0123456789"
+#define        wxECD_NUMERIC                wxT("0123456789")
 /** \def wxECD_EXTRASYMBOLS
  * Extra symbols available when evaluated.
  */
-#define        wxECD_EXTRASYMBOLS           "().#"
+#define        wxECD_EXTRASYMBOLS           wxT("().#")
 /** \def wxECD_PERMITTED
- * All the characters which will not be filtered when they will be parsed.
+ * The allowed ANSI characters are defined here.
+ * Since 0.6.1, you can define a constant with the name of your choice.
+ * It means you can use a chinese or japanese name if you have enabled "UNICODE".
+ * This choice is automatically performed.
  */
-#define        wxECD_PERMITTED              (char*) wxECD_ALPHABET wxECD_NUMERIC wxECD_OPERATORS wxECD_EXTRASYMBOLS
+#define        wxECD_PERMITTED              wxT("abcdefghijklmnopqrstuvwxyz0123456789^/*-+().#")
 /** \def wxECD_STACKMAX
  * Maximal number of constants you may define.
  *
@@ -312,18 +332,6 @@
  */
 #define        wxECD_STACKMAX               128
 
-
-/** \struct wxEcConstants
- *  \brief Stores the name of a constant and its value
- *
- * Internally, wxEcEngine can store \a wxECD_STACKMAX constants.
- * \see wxEcEngine
- * \see wxECD_STACKMAX
- */
-typedef struct wxEcConstants {
-    wxString Name;          /**< The name of the constant. */
-    double Value;           /**< The value of the constant. */
-} wxEcConstants;
 
 /** \struct wxEcPosition
  *  \brief Stores an expression and two indexes (Start/End)
@@ -337,6 +345,14 @@ typedef struct wxEcPosition {
     long End;               /**< An end position. */
     wxString Function;      /**< The expression. */
 } wxEcPosition;
+
+/** \struct wxEcConstMap
+ *  \brief It is a wxHashMap(string -> double) which can manage a list of constants.
+ *
+ * Since version 0.6.1, wxHashMap is the new system used to manage constants.
+ * Before, an array of 128 cells was used. Performances have not been probed.
+ */
+WX_DECLARE_STRING_HASH_MAP(double, wxEcConstMap);
 
 /** Error codes returned by wxEcEngine::Compute().
  * \see wxEcEngine::GetLastError()
@@ -409,7 +425,7 @@ enum {
 };
 
 /** \class wxEcPointDouble
- *  \brief Defines an X-Y position with floating values
+ * \brief Defines an X-Y position with floating values
  */
 class wxEcPointDouble {
     public:

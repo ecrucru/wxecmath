@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,11 +27,21 @@
 
 //------------------------------------------
 
+#define  wxECM_USEDEBUG
+
 #include "wx/file.h"
 #include "../../lib/ec_defs.h"
 #include "../../lib/ec_engine.h"
 
 #define wxCONSOLEBUFFER        4096
+
+#if wxUSE_UNICODE
+    #define uniPrint wprintf
+    #define uniScan  wscanf
+#else
+    #define uniPrint printf
+    #define uniScan  scanf
+#endif
 
 //------------------------------------------
 
@@ -40,7 +50,7 @@ size_t ProcessPipe()
     //-- Initialization
     wxEcEngine *calc;
     wxString *data;
-    char stdinBuffer[wxCONSOLEBUFFER+1];
+    wxChar stdinBuffer[wxCONSOLEBUFFER+1];
     wxFile fInput, fOutput;
     size_t numRead, exitCode;
 
@@ -49,14 +59,14 @@ size_t ProcessPipe()
     numRead = fInput.Read(&stdinBuffer, wxCONSOLEBUFFER);
     if ((numRead>0) && (numRead<=wxCONSOLEBUFFER))
     {
-        stdinBuffer[numRead] = (char) 0;
+        stdinBuffer[numRead] = (wxChar) 0;
         data = new wxString(stdinBuffer);
-        *data = data->BeforeFirst('\r');
-        *data = data->BeforeFirst('\n');
+        *data = data->BeforeFirst(wxT('\r'));
+        *data = data->BeforeFirst(wxT('\n'));
             calc = new wxEcEngine();
             calc->UseDebug(false);
                 calc->SetFormula(*data);
-                *data = wxString::Format("%f", calc->Compute());
+                *data = wxString::Format(wxT("%f"), calc->Compute());
                 exitCode = calc->GetLastError();
 
                 //-- Output
@@ -73,7 +83,7 @@ size_t ProcessPipe()
 size_t ProcessConsole()
 {
     //-- Initialization
-    char userBuffer[wxCONSOLEBUFFER+1];
+    wxChar userBuffer[wxCONSOLEBUFFER+1];
     wxEcEngine *calc;
     wxArrayString calcDump;
     double result;
@@ -83,32 +93,32 @@ size_t ProcessConsole()
     calc = new wxEcEngine();
     calc->UseDebug(true);
 
-    printf("***********************************************************\n\n\
+    uniPrint(wxT("***********************************************************\n\n\
      %s %s - Sample: console\n\n\
      Online: %s\n\n\
 ***********************************************************\n\n\
-   \"exit\" to quit, \"ans\" to call the last result.\n\n", wxECD_SOFTWARE, wxECD_VERSION, wxECD_URL);
+   \"exit\" to quit, \"ans\" to call the last result.\n\n"), wxECD_SOFTWARE, wxECD_VERSION, wxECD_URL);
 
 RedoConsole:
-        printf("> ");
+        uniPrint(wxT("> "));
         fflush(stdin);
-        scanf("%s", &userBuffer);
+        uniScan(wxT("%s"), &userBuffer);
 
-        if ((userBuffer[0]!='e') || (userBuffer[1]!='x') || (userBuffer[2]!='i') || (userBuffer[3]!='t'))
+        if ((userBuffer[0]!=wxT('e')) || (userBuffer[1]!=wxT('x')) || (userBuffer[2]!=wxT('i')) || (userBuffer[3]!=wxT('t')))
         {
             calc->SetFormula(wxString(userBuffer));
             result = calc->Compute();
             calc->SetConstant(wxT("ans"), result);
 
 
-            #ifdef wxECM_USELOG
-                printf("\n");
+            #ifdef wxECM_USEDEBUG
+                uniPrint(wxT("\n"));
                 calcDump = calc->GetLog();
                 for (i=0 ; i<calcDump.GetCount() ; i++)
-                    printf("     | %s\n", calcDump.Item(i).Trim(false).Trim(true).c_str());
-                printf("     |\n     | %s\n\nResult = %f\n\n", calc->TranslateError(calc->GetLastError()).c_str(), result);
+                    uniPrint(wxT("     | %s\n"), calcDump.Item(i).Trim(false).Trim(true).c_str());
+                uniPrint(wxT("     |\n     | %s\n\nResult = %f\n\n"), calc->TranslateError(calc->GetLastError()).c_str(), result);
             #else
-                printf("%f\n\n", result);
+                uniPrint(wxT("%f\n\n"), result);
             #endif
             goto RedoConsole;
         }

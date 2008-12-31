@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6 beta
- *  Copyright (C) 2008, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.1
+ *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@
 
 //------------------------------------------
 
+#define  wxECM_USEDEBUG
+
 #include "wx/aboutdlg.h"
 #include "wx/clipbrd.h"
 #include "../../lib/ec_defs.h"
@@ -39,27 +41,10 @@
 #include "../../imgs/icon.xpm"
 #include "debugwin.h"
 
-#define        MEMORY_NAME        "memory"
-#define        STATUS_INFO        1
-#define        GRID_ROWS        4
-#define        GRID_COLS        9
-
-enum {
-    MENU_ABOUT = wxID_ABOUT,
-    MENU_QUIT = wxID_EXIT,
-    ID_BASE = 1000,
-
-/*pad*/            ID_0, ID_1, ID_2, ID_3, ID_4, ID_5, ID_6, ID_7, ID_8, ID_9,
-/*checkbox*/    ID_ARCBOX, ID_HYPERBOLIC,
-/*combobox*/    ID_CONSTS, ID_FUNCLIST, ID_TRIGO,
-/*edit*/        ID_FORMULA,
-/*button*/        ID_BRACKETCLOSE, ID_BRACKETOPEN, ID_CALL, ID_CLR, ID_COMMA, ID_COS, ID_DEF, ID_DIV,
-                ID_E, ID_EGAL, ID_EXP, ID_LN, ID_LOG, ID_MENU, ID_MINUS, ID_MP, ID_MULT, ID_PERCENT,
-                ID_PI, ID_PLUS, ID_PLUSMINUS, ID_POW10, ID_POWER, ID_REVERSE, ID_SET, ID_SIN, ID_SQ2,
-                ID_SQRT, ID_TAN, 
-/*menu*/        MENU_COPYRESULT, MENU_COPYFORMULA, MENU_PASTE, MENU_DEBUG, MENU_SIMPLIFY, MENU_ISVALID,
-                MENU_CLOSEBRACKETS, MENU_RESETCONST, MENU_COMPACT
-};
+#define     MEMORY_NAME     wxT("memory")
+#define     STATUS_INFO     1
+#define     GRID_ROWS       4
+#define     GRID_COLS       9
 
 //------------------------------------------
 
@@ -67,6 +52,23 @@ class wxCalcFrame: public wxFrame
 {
     DECLARE_EVENT_TABLE()
     private:
+
+        enum {
+            MENU_ABOUT = wxID_ABOUT,
+            MENU_QUIT = wxID_EXIT,
+            ID_BASE = 1024,
+            /*pad*/         ID_0, ID_1, ID_2, ID_3, ID_4, ID_5, ID_6, ID_7, ID_8, ID_9,
+            /*checkbox*/    ID_ARCBOX, ID_HYPERBOLIC,
+            /*combobox*/    ID_CONSTS, ID_FUNCLIST, ID_TRIGO,
+            /*edit*/        ID_FORMULA,
+            /*button*/      ID_BRACKETCLOSE, ID_BRACKETOPEN, ID_CALL, ID_CLR, ID_COMMA, ID_COS, ID_DEF, ID_DIV,
+                            ID_E, ID_EGAL, ID_EXP, ID_LN, ID_LOG, ID_MENU, ID_MINUS, ID_MP, ID_MULT, ID_PERCENT,
+                            ID_PI, ID_PLUS, ID_PLUSMINUS, ID_POW10, ID_POWER, ID_REVERSE, ID_SET, ID_SIN, ID_SQ2,
+                            ID_SQRT, ID_TAN, 
+            /*menu*/        MENU_COPYRESULT, MENU_COPYFORMULA, MENU_PASTE, MENU_DEBUG, MENU_SIMPLIFY, MENU_ISVALID,
+                            MENU_CLOSEBRACKETS, MENU_RESETCONST, MENU_COMPACT
+        };
+
         wxEcEngine    *Calc;
         double        Memory;
 
