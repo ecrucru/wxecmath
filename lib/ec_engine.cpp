@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ wxString wxEcEngine::GetFormula()
 
 wxString wxEcEngine::GetIndicator()
 {
-    if (m_indicator.Len() != 0)
+    if (!m_indicator.IsEmpty())
         return m_indicator;
     else
         return wxEmptyString;
@@ -183,7 +183,7 @@ void wxEcEngine::ResetConstants()
 
 bool wxEcEngine::SetConstant(wxString name, wxDouble value)
 {
-    if (name.Len() == 0)
+    if (name.IsEmpty())
         return false;
     name = name.Lower().Trim(false).Trim(true);
     m_constants[name] = value;
@@ -403,6 +403,7 @@ void wxEcEngine::Simplify(wxString *expression)
     size_t i;
 
     buffer.Clear();
+    expression->LowerCase();
     lastCar = 0;
     for (i=0 ; i<expression->Len() ; i++)
     {
@@ -509,6 +510,13 @@ bool wxEcEngine::ApplyFunction(wxString *function, double *value)
             else
                 *value = sqrt(*value);
             break;
+    //conversion
+        case 6579559: //deg
+            *value = *value * 180 / M_PI;
+            break;
+        case 7496036: //rad
+            *value = *value / 180 * M_PI;
+            break;
     //logarithm
         case 27758: //ln
         case 1819174256: //lnep
@@ -532,6 +540,9 @@ bool wxEcEngine::ApplyFunction(wxString *function, double *value)
             break;
         case 7563630: //sin
             *value = sin(ConvertToRadian(*value));
+            break;
+        case 1936289379: //sinc
+            *value = sin(*value)/(*value);
             break;
         case 7627118: //tan
             *value = tan(ConvertToRadian(*value));
@@ -680,14 +691,15 @@ double wxEcEngine::evalf(wxString *expression)
                 value = value.BeforeFirst(wxT('#'));
                 ApplyFunction(&value, &(m_pool[terms]));
             }
-        } else
+        }
+        else
             if (!GetConstant(value, &(m_pool[terms])))
                 break;
         poolSign.Append(buffer.GetChar(index));
         buffer = buffer.Mid(index+1);
         terms++;
 
-        if (buffer.Len() == 0) 
+        if (buffer.IsEmpty())
             break;
     }
     if (poolSign.Len() >= wxECD_STACKMAX-1)
@@ -742,7 +754,7 @@ RedoForOperator:
     return m_pool[0];
 }
 
-bool wxEcEngine::Derivate(double where, double *result, double *atwhere)
+bool wxEcEngine::Derivate(double where, double *result, double *storewhere)
 {
     double fx, fxm, fxp;
     //-- Computes
@@ -759,8 +771,8 @@ bool wxEcEngine::Derivate(double where, double *result, double *atwhere)
     if (GetLastError() != wxECE_NOERROR)
         return false;
     //-- Store the results
-    if (atwhere != NULL)
-        *atwhere = fx;
+    if (storewhere != NULL)
+        *storewhere = fx;
     if (result != NULL)
         *result = (fxp - fxm)/(2*wxECD_DXSTEP);
     return true;
@@ -775,7 +787,9 @@ bool wxEcEngine::SetFormula(wxString expression)
         m_formula = expression;
         //m_errorcode = wxECE_NOERROR; already done with Reset()
         return true;
-    } else {
+    }
+    else
+    {
         m_errorcode = wxECE_SYNTAX;
         return false;
     }

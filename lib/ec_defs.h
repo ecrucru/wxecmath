@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,19 +24,19 @@
 
 /** @mainpage wxEcMath
  *
- * \a wxEcMath is a tiny library to bind to your software. It gives you the means to evaluate
- * mathematical expressions and draw curves. The rich samples provided will help you to
- * set up a new project very quickly.
+ * \a wxEcMath is a tiny library to link to your software. It gives you the means to handle
+ * mathematical objects : expressions, curves, complex numbers and matrixes. The rich samples
+ * provided will help you to set up a new project very quickly.
  *
- * The four main interests of wxEcMath are :
- *      - the ability to evaluate complex expressions with pretty nice performances
- *      - the support of Windows, Linux, Macintosh...
- *      - the support of ANSI and UNICODE compilations
- *      - the documentation to give you all the clues
+ * The four main interests of \a wxEcMath are :
+ *      - interesting features, principally the parser of mathematic expressions
+ *      - multi-platform
+ *      - support of ANSI and UNICODE
+ *      - rich documentation and samples
  *
  * The intended audience is developers and researchers.
  *
- * To use the library, you must write your software using the wxWidgets framework.
+ * To use the library, you must write your software using the \a wxWidgets framework.
  * You must also be aware of the terms under which the library is released (see below).
  *
  * \section topics Topics
@@ -44,6 +44,7 @@
  *      - \subpage naming       "Naming convention of the constants"
  *      - \subpage syntax       "Syntax to load a curve"
  *      - \subpage funclist     "Supported functions"
+ *      - \subpage samples      "Samples"
  *      - \subpage license      "License"
  *      .
  * See online : http://sourceforge.net/projects/wxecmath/
@@ -52,15 +53,21 @@
 /** \page overview Overview
  *
  * \a wxEcMath is the name given to the library, which contains sub-classes.
- * You really need to know wxEcEngine (the calculator) and wxEcPlot (the renderer).
+ * You really need to know wxEcEngine, wxEcPlot, wxEcComplex and wxEcMatrix.
  *
- * To include the library, you just need the header files to be loaded in your workspace
- * and type the following code. All new names start with the "wxEc" prefix.
+ * To compile the library, you just need to include it in your workspace.
+ * There is no makefile, and no shared library.
+ *
+ * Depending on your needs, you will have the include header files. New
+ * names begin with prefix "wxEc". If you don't need a class, don't include
+ * the associated header file.
  * \code
- *      #define wxECM_USEDEBUG        //read the docs about this feature
- *      #include "ec_defs.h"
+ *      #define wxECM_USEDEBUG
+ *      #include "ec_defs.h"        //always required !
  *      #include "ec_engine.h"
- *      #include "ec_plot.h"        //if you need a plot
+ *      #include "ec_plot.h"
+ *      #include "ec_complex.h"
+ *      #include "ec_matrix.h"
  * \endcode
  * \see wxECM_USEDEBUG
  *
@@ -74,40 +81,76 @@
  *      if (calc.GetLastError() == wxECE_NOERROR)
  *          ; //well done !
  *      else
- *          ; //better luck next time !
+ *          wxLogError(calc.TranslateError(calc.GetLastError()));
+ *          //better luck next time !
  *  }
  * \endcode
  *
- * To create the component, it is the same method as you do most of the time :
+ * To create a plot, do like other common components :
  * \code
  *  {
- *      wxEcPlot *Plot;
+ *      wxEcPlot *m_plot;
  *      ...
- *      Plot = new wxEcPlot(this, wxID_ANY);
- *      yourMainSizer->Add(Plot, 1, wxEXPAND|wxALL, 5);
+ *      m_plot = new wxEcPlot(this, wxID_ANY, wxDefaultPostion, wxDefaultSize);
+ *      m_yourSizer->Add(m_plot, 1, wxEXPAND|wxALL, 5);
  *  }
  * \endcode
  *
- * To draw a curve into a wxEcPlot, it is also easy :
+ * To draw a curve, you have to create a new object :
  * \code
  *  {
- *      wxEcPlot *Plot; //must be normally initialized, this is just an example
+ *      wxEcPlot *m_plot; //assumed correctly initialized by you
  *      int curveID;
  *      wxEcCurve newcurve;
- *      newcurve.Parse(wxT("sqr(x)/10 $ -7 4"));
- *      curveID = Plot->AddCurve(&newcurve);
- *      Plot->Refresh();
+ *      newcurve.Parse(wxT("sqr(x)/10 $ -7 4*pi"));
+ *      curveID = m_plot->AddCurve(newcurve);
+ *      m_plot->Refresh();
  *  }
  * \endcode
+ *
+ * \remarks \ref samples "Samples" detail various types of wxEcCurve.
+ * Explore the code and find the use of wxEcPlot::AddCurve().
+ *
+ * If you want to use complex numbers, it is not complicated :
+ * \code
+ *  {
+ *      wxEcComplex a(4,3), b(-1,0), c, d;
+ *      c = a + b;
+ *      d = a * c;
+ *      b.Re = d.Im;
+ *      //...
+ *  }
+ * \endcode
+ *
+ * When using matrixes, you will have to initialize each cell before being able to operate.
+ * Automated fills can be managed by wxEcMatrix::Clear(), wxEcMatrix::Factor() and
+ * wxEcMatrix::AddConstant().
+ * \code
+ *  {
+ *      wxEcMatrix matA(2,2), matB(2,1), matC;
+ *      matA.SetValue(1,1, 1);      //the first parameter is the n-th line
+ *      matA.SetValue(1,2, 2);      //the second paramater is the n-th column
+ *      matA.SetValue(2,1, 3);      //the third parameter is the value of the designated cell
+ *      matA.SetValue(2,2, 4);
+ *      matB.SetValue(1,1, 5);
+ *      matB.SetValue(2,1, -6);
+ *      matC = matA * matC;
+ *      wxMessageDialog(NULL, matC.DumpAsString()).ShowModal();
+ *  }
+ * \endcode
+ * \warning A matrix stores values in double format. At C++ compilation, make sure your values
+ *          won't be considered as integer values. Thus, you must write "my_matrix.Clear(2.0/3.0)"
+ *          not "my_matrix.Clear(2/3)". In case of doubt, wxEcMatrix::DumpAsString() can show
+ *          you the content of the matrix.
  */
 
 /** \page naming Naming convention
  *
- * The symbols of wxEcMath have the magic prefix "wxEc" or "wxEC".
+ * Symbols included in wxEcMath have a magic prefix named "wxEc" or "wxEC".
  * The first one defines a class or a structure. The second one
  * represents a definition or an enumeration.
  *
- * Symbols "wxEC" have a special syntax : wxEC(key)_(name)
+ * wxEC is attached another letter following this syntax : wxEC(key)_(name)
  *  - key :
  *      - A : angle
  *      - D : definition
@@ -117,46 +160,75 @@
  *      .
  *  - name : written in uppercase
  *  .
+ *
+ * Definitions are stored in "ec_defs.h".
  */
 
 /** \page syntax Syntax to load a curve
  *
- * With wxEcPlot, you can draw 3 types of curves :
+ * With wxEcPlot, you can draw 4 types of curves :
  *      - cartesian : y = f(x) marked as \a wxECT_CARTESIAN.
  *      - parametric : x = f(t) and y = f(t) marked as \a wxECT_PARAMETRIC.
  *      - polar : r = f(t) marked as \a wxECT_POLAR.
+ *      - cloud : array of (x,y) as \a wxECT_CLOUD.
  *      .
  *
- * However, you can also restrict the domain definition. So a syntax must be adopted.
- * Because of \a theta, parametric and polar curves must be restricted.
+ * To parse a formula automatically, a syntax must be adopted. You can restrict the definition
+ * of the curve by using wildcards. Because of \a theta, parametric and polar curves will be
+ * restricted in any case.
  *      - cartesian normal : "3*x+2"
  *      - cartesian restricted : "sqr(x) $ -5 5"
  *      - parametric : "t+2 ; t/2 $ -pi pi"
  *      - polar : "t $ 0 2*pi"
+ *      - cloud : (unapplicable)
  *      .
  *
- * These values must be parsed with wxEcCurve::Parse(), but you can also
- * define a wxEcCurve on your own via the constructor or the methods.
+ * These strings must be parsed using wxEcCurve::Parse(), but you can also define a wxEcCurve
+ * on your own via the constructor or the methods (required for wxECT_CLOUD).
  * \warning If the expression is polar, wxEcCurve::Parse() takes a second parameter !
+ * Else it will be considered as being parametric.
  *
  * As you can see :
- *      - ";" delimits the two members of a parametric curve.
+ *      - ";" delimits the two members of an equation.
  *      - "$" defines a domain, min and max are separated with a space.
  *      - if these characters are not found, the expression will be treated as a non-restricted cartesian curve.
  *      .
  * If no domain is given, default values will be chosen. The use of the range will be set accordingly.
  *
- * You can read the \ref overview "overview" to see a sample. Or you can try the
- * full sample named "plot" given in the distribution.
- *
- * When you parse an expression, a default colour is chosen, randomly among twenty colours.
+ * When you parse an expression, a default colour is randomly chosen among twenty pre-definied colours.
  * It is a good thing to randomize this automatic choice in your \a wxApp::OnInit() :
  * \code
- * srand(time(NULL));
+ *  srand(time(NULL));
  * \endcode
+ *
+ * When dealing with a point cloud, you will have to define the curve on your own (data, style, color...).
+ * Let's see how to do with a shortened sample :
+ * \code
+ *  #include "ec_defs.h"
+ *  #include "ec_engine.h"
+ *  #include "ec_plot.h"
+ *
+ *  class myShortenedClass
+ *  {
+ *      private:
+ *          wxEcPlot *m_plot;
+ *          wxRealPoint m_cloud[10];
+ *          void CreateCloud()
+ *          {
+ *              wxEcCurve curve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxRED, 1, false, false, 0, 10, 10, &(m_cloud[0]));
+ *              m_plot->AddCurve(curve);
+ *          }
+ *  }
+ * \endcode
+ *
+ * As the cloud uses a pointer, any modification in \a m_cloud will affect the plot.
+ * Do use wxEcPlot::Refresh() to update your view. It is not sure it will be performed automatically.
+ *
+ * \warning The number of points declared in wxEcCurve::NumPoints must be lower or equal than
+ * the capacity of your buffer. If not, it will result in unexpected bugs.
  */
 
-/** \page funclist Supported functions
+/** \page funclist Supported functions in wxEcMath
  *
  * The library is able to interpret several functions. Their length cannot be longer than 4 characters.
  * Indeed wxEcEngine::Function2ID() converts the name (8 or 16 bits per char) into an integer (32 bits).
@@ -166,6 +238,7 @@
  *      - abs : the absolute value, it removes the sign
  *      - ceil : the smallest integer greater than or equal to x
  *      - cub : x^3, safe way to compute such an exponent
+ *      - deg : converts from radian to degree
  *      - exp : the exponential value
  *      - hvi : Heaviside's function, =0 if x<0, =1 if x>=0
  *      - int : the largest integer less than or equal to x
@@ -174,7 +247,8 @@
  *      - ln : the neperian logarithm
  *      - lnep : see \a ln
  *      - log : the logarithm base 10
- *      - sgn : the sign, -1 or +1
+ *      - rad : converts from degree to radian
+ *      - sgn : the sign, -1 or +1. Zero returns +1.
  *      - sqr : x^2, safe way to compute such an exponent
  *      - sqrt : the root square
  *      .
@@ -189,9 +263,75 @@
  *      - cos : the cosine
  *      - cosh : the hyperbolic cosine
  *      - sin : the sine
+ *      - sinc : the cardinal sine (radian)
  *      - sinh : the hyperbolic sine
  *      - tan : the tangent
  *      - tanh : the hyperbolic tangent
+ *      .
+ *
+ * \section complexfuncs Overriden functions in the complex domain
+ * These functions are not supported by wxEcEngine. Their use is dedicated
+ * to C++ developers who use our wxEcComplex class to handle complex numbers.
+ *
+ * The definition of these functions is explicitely written in ec_complex.h.
+ * So you must include this file before being able to use them.
+ * \code
+ *     #include "ec_complex.h"
+ * \endcode
+ *
+ * List :
+ *      - sqrt : the root square
+ *      - exp : the exponential value
+ *      - log : the natural logarithm (don't confuse with LN which is not overriden)
+ *      - cos : cosine
+ *      - sin : sine
+ *      - tan : tangent
+ *      - csc : cosecant
+ *      - sec : secant
+ *      - cot : cotangent
+ *      - cosh : hyperbolic cosine
+ *      - sinh : hyperbolic sine
+ *      - tanh : hyperbolic tangent
+ *      - csch : hyperbolic cosecant
+ *      - sech : hyperbolic secant
+ *      - coth : hyperbolic cotangent
+ *      .
+ */
+
+/** \page samples Samples
+ *
+ * Samples are provided to show various possible uses of the library.
+ *
+ * They are sorted in a dedicated folder :
+ *
+ *      - console :
+ *          - wxEcEngine
+ *          .
+ *      - histogram :
+ *          - wxEcPlot : wxECT_CLOUD
+ *          .
+ *      - inline :
+ *          - wxEcEngine
+ *          .
+ *      - mandelbrot :
+ *          - wxEcComplex : operations, modulus, argument
+ *          - wxEcPlot : wxECT_CLOUD
+ *          .
+ *      - matrix
+ *          - wxEcMatrix
+ *          - wxEcPlot : wxECT_CLOUD
+ *          .
+ *      - plot :
+ *          - wxEcEngine
+ *          - wxEcPlot : wxECT_CARTESIAN, wxECT_PARAMETRIC, wxECT_POLAR
+ *          - wxEcComplex : modulus, argument
+ *          .
+ *      - speedtest :
+ *          - wxEcEngine
+ *          .
+ *      - visualcalc :
+ *          - wxEcEngine
+ *          .
  *      .
  */
 
@@ -202,7 +342,7 @@
  * The official download center is SourceForge.net
  *
  * \pre
- *  wxEcMath - version 0.6.1 <br>
+ *  wxEcMath - version 0.6.2 <br>
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  * \pre
@@ -229,8 +369,8 @@
  * \file ec_defs.h
  * \brief Definition of the simpliest classes and constants
  * \author ecrucru
- * \version 0.6.1
- * \date January 2009
+ * \version 0.6.2
+ * \date August 2008
  *
  * Implements the definition of core elements needed by the wxEcMath classes.
  * Before compiling a release, please take a look to wxECM_USEDEBUG. This can
@@ -255,13 +395,16 @@
  * during the development of wxEcMath to track bugs. For a lambda-user, there is no
  * need to use them (performances would be more than 2 times slower).
  *
- * You can enable the additional features without editing the library. Just do in your
- * .cpp code :
+ * To enable these features without editing the library, you can write :
  * \code
  *      #define  wxECM_USEDEBUG
  *      #include "ec_defs.h"
  *      #include "ec_engine.h"
  * \endcode
+ *
+ * But it is really better to define wxECM_USEDEBUG as a preprocessor definition.
+ * Thus it will apply to the whole project. You can do by editing the settings of
+ * the project, or by adding /DwxECM_USEDEBUG=1 in the command line.
  *
  * \see wxEcEngine
  * \see wxEcEngine::LogAction()
@@ -282,7 +425,7 @@
 /** \def wxECD_VERSION
  * Version of the software currently used.
  */
-#define        wxECD_VERSION                wxT("0.6.1")
+#define        wxECD_VERSION                wxT("0.6.2")
 /** \def wxECD_AVERAGESPEED
  * Average computations you can make in 1 second.
  * Allows you to predict the time needed in complex algorithms.
@@ -340,7 +483,8 @@
  * Normally, you are not expected to need this resource.
  * \see wxEcEngine
  */
-typedef struct wxEcPosition {
+typedef struct wxEcPosition
+{
     long Start;             /**< A start position. */
     long End;               /**< An end position. */
     wxString Function;      /**< The expression. */
@@ -350,14 +494,15 @@ typedef struct wxEcPosition {
  *  \brief It is a wxHashMap(string -> double) which can manage a list of constants.
  *
  * Since version 0.6.1, wxHashMap is the new system used to manage constants.
- * Before, an array of 128 cells was used. Performances have not been probed.
+ * Before, an array of 128 cells was used. New performances have not been probed.
  */
 WX_DECLARE_STRING_HASH_MAP(double, wxEcConstMap);
 
 /** Error codes returned by wxEcEngine::Compute().
  * \see wxEcEngine::GetLastError()
  */
-enum {
+enum
+{
     wxECE_NOERROR = 0,      /**< No error. */
     wxECE_SYNTAX,           /**< The syntax is not correct. */
     wxECE_UNDEFCONSTANT,    /**< The constant is not defined. */
@@ -375,7 +520,8 @@ enum {
  * \see wxEcEngine::GetTrigonometricMode()
  * \see wxEcEngine::SetTrigonometricMode()
  */
-enum {
+enum
+{
     wxECA_RADIAN = 0,       /**< Radian. */
     wxECA_DEGREE,           /**< Degree. */
     wxECA_GRADIAN           /**< Gradian. */
@@ -389,7 +535,7 @@ enum {
  */
 #define        wxECD_CURVEMAX               64
 /** \def wxECD_STEPSMAX
- * Maximal number of graduations a plot can contain.
+ * Maximal number of graduations a plot may contain.
  */
 #define        wxECD_STEPSMAX               30
 /** \def wxECD_RESOLUTION
@@ -418,24 +564,40 @@ enum {
 /** Types of curves you can draw.
  * \see wxEcCurve
  */
-enum {
+enum
+{
     wxECT_CARTESIAN = 0,    /**< Cartesian: y = f(x) */
     wxECT_PARAMETRIC,       /**< Parametric: x = f(t) && y = f(t) */
-    wxECT_POLAR             /**< Polar : r = f(t) */
+    wxECT_POLAR,            /**< Polar : r = f(t) */
+    wxECT_CLOUD               /**< Graphical representation : data from experiments, evolution of the stock exchange...*/
 };
 
-/** \class wxEcPointDouble
- * \brief Defines an X-Y position with floating values
- */
-class wxEcPointDouble {
-    public:
-        double X; /**< The X-coordinate. */
-        double Y; /**< The Y-coordinate. */
+//--------------- FUNCS --------------------
 
+static bool wxEcBetween(unsigned int value, unsigned int lowlimit, unsigned int highlimit)
+{
+    return ((lowlimit<=value) && (value<=highlimit));
+}
+
+//------------------------------------------
+
+/** \class wxEcUPoint
+ *  \brief Stores 2 unsigned integers.
+ *
+ * This class is similar to wxPoint but stores unsigned values
+ * and arithmetic operators have been removed.
+ */
+class WXDLLEXPORT wxEcUPoint
+{
+    public:
+        unsigned int x;     /**< X. */
+        unsigned int y;     /**< Y. */
         /** The default constructor. */
-        wxEcPointDouble(double x = 0.0, double y = 0.0) : X(x), Y(y) { }
-        /** The default destructor. */
-        ~wxEcPointDouble() { }
+        wxEcUPoint() : x(0), y(0) { }
+        /** The constructor with initialization. */
+        wxEcUPoint(unsigned int newx, unsigned int newy) : x(newx), y(newy) { }
+        /** Compares two unsigned points. */
+        bool operator==(const wxEcUPoint& up) { return ((x==up.x) && (y==up.y)); }
 };
 
 #endif

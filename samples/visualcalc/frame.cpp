@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,17 +20,7 @@
 #include "frame.h"
 
     BEGIN_EVENT_TABLE(wxCalcFrame, wxFrame)
-        EVT_MENU(MENU_COPYRESULT, wxCalcFrame::OnMenuCopyResultClick)
-        EVT_MENU(MENU_COPYFORMULA, wxCalcFrame::OnMenuCopyFormulaClick)
-        EVT_MENU(MENU_PASTE, wxCalcFrame::OnMenuPasteClick)
-        EVT_MENU(MENU_DEBUG, wxCalcFrame::OnMenuDebugClick)
-        EVT_MENU(MENU_QUIT, wxCalcFrame::OnMenuQuitClick)
-        EVT_MENU(MENU_SIMPLIFY, wxCalcFrame::OnMenuSimplifyClick)
-        EVT_MENU(MENU_ISVALID, wxCalcFrame::OnMenuIsValidClick)
-        EVT_MENU(MENU_CLOSEBRACKETS, wxCalcFrame::OnMenuCloseBracketsClick)
-        EVT_MENU(MENU_RESETCONST, wxCalcFrame::OnMenuResetConstsClick)
-        EVT_MENU(MENU_COMPACT, wxCalcFrame::OnMenuCompactClick)
-        EVT_MENU(MENU_ABOUT, wxCalcFrame::OnMenuAboutClick)
+        EVT_MENU(wxID_ANY, wxCalcFrame::OnMenuClick)
 
         EVT_CLOSE(wxCalcFrame::OnCloseEvent)
 
@@ -41,46 +31,9 @@
         EVT_CHECKBOX(ID_ARCBOX, wxCalcFrame::OnCheckBoxClick)
         EVT_CHECKBOX(ID_HYPERBOLIC, wxCalcFrame::OnCheckBoxClick)
 
-        EVT_TEXT_ENTER(ID_FORMULA, wxCalcFrame::OnEgalClick)
+        //EVT_TEXT_ENTER(ID_FORMULA, wxCalcFrame::OnEqualClick)
 
-        EVT_BUTTON(ID_CLR, wxCalcFrame::OnClearClick)
-        EVT_BUTTON(ID_EGAL, wxCalcFrame::OnEgalClick)
-        EVT_BUTTON(ID_CALL, wxCalcFrame::OnCallClick)
-        EVT_BUTTON(ID_SIN, wxCalcFrame::OnSinClick)
-        EVT_BUTTON(ID_EXP, wxCalcFrame::OnExpClick)
-        EVT_BUTTON(ID_LN, wxCalcFrame::OnLnClick)
-        EVT_BUTTON(ID_BRACKETOPEN, wxCalcFrame::OnBracketOpenClick)
-        EVT_BUTTON(ID_7, wxCalcFrame::On7Click)
-        EVT_BUTTON(ID_8, wxCalcFrame::On8Click)
-        EVT_BUTTON(ID_9, wxCalcFrame::On9Click)
-        EVT_BUTTON(ID_DIV, wxCalcFrame::OnDivClick)
-        EVT_BUTTON(ID_SET, wxCalcFrame::OnSetClick)
-        EVT_BUTTON(ID_COS, wxCalcFrame::OnCosClick)
-        EVT_BUTTON(ID_POW10, wxCalcFrame::OnPow10Click)
-        EVT_BUTTON(ID_LOG, wxCalcFrame::OnLogClick)
-        EVT_BUTTON(ID_BRACKETCLOSE, wxCalcFrame::OnBracketCloseClick)
-        EVT_BUTTON(ID_4, wxCalcFrame::On4Click)
-        EVT_BUTTON(ID_5, wxCalcFrame::On5Click)
-        EVT_BUTTON(ID_6, wxCalcFrame::On6Click)
-        EVT_BUTTON(ID_MULT, wxCalcFrame::OnMultClick)
-        EVT_BUTTON(ID_MP, wxCalcFrame::OnMemoryPlusClick)
-        EVT_BUTTON(ID_TAN, wxCalcFrame::OnTanClick)
-        EVT_BUTTON(ID_POWER, wxCalcFrame::OnPowerClick)
-        EVT_BUTTON(ID_SQ2, wxCalcFrame::OnSq2Click)
-        EVT_BUTTON(ID_SQRT, wxCalcFrame::OnSqrtClick)
-        EVT_BUTTON(ID_1, wxCalcFrame::On1Click)
-        EVT_BUTTON(ID_2, wxCalcFrame::On2Click)
-        EVT_BUTTON(ID_3, wxCalcFrame::On3Click)
-        EVT_BUTTON(ID_PLUS, wxCalcFrame::OnPlusClick)
-        EVT_BUTTON(ID_DEF, wxCalcFrame::OnDefClick)
-        EVT_BUTTON(ID_PI, wxCalcFrame::OnPiClick)
-        EVT_BUTTON(ID_PERCENT, wxCalcFrame::OnPercentClick)
-        EVT_BUTTON(ID_E, wxCalcFrame::OnEClick)
-        EVT_BUTTON(ID_REVERSE, wxCalcFrame::OnReverseClick)
-        EVT_BUTTON(ID_0, wxCalcFrame::On0Click)
-        EVT_BUTTON(ID_COMMA, wxCalcFrame::OnCommaClick)
-        EVT_BUTTON(ID_PLUSMINUS, wxCalcFrame::OnPlusMinusClick)
-        EVT_BUTTON(ID_MINUS, wxCalcFrame::OnMinusClick)
+        EVT_BUTTON(wxID_ANY, wxCalcFrame::OnButtonClick)
     END_EVENT_TABLE()
 
 
@@ -134,6 +87,7 @@ wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -
         ComboFunctions->Append(wxT("cos"));
         ComboFunctions->Append(wxT("cosh"));
         ComboFunctions->Append(wxT("sin"));
+        ComboFunctions->Append(wxT("sinc"));
         ComboFunctions->Append(wxT("sinh"));
         ComboFunctions->Append(wxT("tan"));
         ComboFunctions->Append(wxT("tanh"));
@@ -189,10 +143,10 @@ wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -
 
     FormulaSizer->Add(FormulaSizerC2, 1, wxEXPAND, 5);
 
-    ButtonEgal = new wxButton(this, ID_EGAL, wxT("="), wxDefaultPosition, ButtonSize, 0);
-    ButtonEgal->SetForegroundColour(wxColour(255, 0, 0));
+    ButtonEqual = new wxButton(this, ID_EQUAL, wxT("="), wxDefaultPosition, ButtonSize, 0);
+    ButtonEqual->SetForegroundColour(wxColour(255, 0, 0));
     
-    FormulaSizer->Add(ButtonEgal, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
+    FormulaSizer->Add(ButtonEqual, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
 
     VSizer->Add(FormulaSizer, 0, wxEXPAND|wxLEFT|wxRIGHT, 5);
 
@@ -323,7 +277,7 @@ wxCalcFrame::wxCalcFrame(const bool DoShow, bool RequireCompact):wxFrame(NULL, -
             GridButtonArray[i]->SetFont(ButtonFont);
         }
         ButtonClr->SetFont(ButtonFont);
-        ButtonEgal->SetFont(ButtonFont);
+        ButtonEqual->SetFont(ButtonFont);
 
     VSizer->Add(GridSizer, 1, wxALL|wxEXPAND, 5);
 
@@ -440,10 +394,10 @@ void wxCalcFrame::UpdateUI()
 
 //------------------ MENU ------------------
 
-    static size_t CountChar(wxString *Input, wxChar What)
+    static unsigned int CountChar(wxString *Input, wxChar What)
     {
         size_t i;
-        wxUint32 Result = 0;
+        unsigned int Result = 0;
         for (i=0 ; i<Input->Len() ; i++)
             if (Input->GetChar(i) == What)
                 Result++;
@@ -468,136 +422,135 @@ void wxCalcFrame::UpdateUI()
         return Result;
     }
 
-void wxCalcFrame::OnMenuCopyResultClick(wxCommandEvent& event)
+void wxCalcFrame::OnMenuClick(wxCommandEvent& event)
 {
-    CopyToClipboard(wxString::Format(wxT("%f"), Calc->GetLastResult()));
-}
-
-void wxCalcFrame::OnMenuCopyFormulaClick(wxCommandEvent& event)
-{
-    CopyToClipboard(Calc->GetFormula());
-}
-
-void wxCalcFrame::OnMenuPasteClick(wxCommandEvent& event)
-{
-    bool HasSomething = false;
+    bool HasSomething;
+    int BrDelta, i;
+    wxString Buffer;
     wxTextDataObject Content;
-    wxString Buffer = wxEmptyString;
-
-    if (wxTheClipboard->Open())
-    {
-        if (wxTheClipboard->IsSupported(wxDF_TEXT))
-        {
-            wxTheClipboard->GetData(Content);
-            Buffer = Content.GetText();
-            //-- We get the first line only :)
-            if (Buffer.Find(wxT("\r")) != wxNOT_FOUND)
-                Buffer = Buffer.BeforeFirst(wxT('\r'));
-            if (Buffer.Find(wxT("\n")) != wxNOT_FOUND)
-                Buffer = Buffer.BeforeFirst(wxT('\n'));
-            HasSomething = (Buffer.Len() > 0);
-        }
-        wxTheClipboard->Close();
-    }
-    if (HasSomething)
-    {
-        EditFormula->SetValue(Buffer);
-        EditFormula->SetInsertionPointEnd();
-    } else
-        ShowMessage(wxT("The clipboard does not contain a valid content."), wxICON_ERROR);    
-}
-
-void wxCalcFrame::OnMenuDebugClick(wxCommandEvent& event)
-{
-    #ifdef wxECM_USEDEBUG
-        wxArrayString LogData;
-        size_t i;
-
-        wxDebugWindow *DebugDialog = new wxDebugWindow(this);
-        if (Calc->GetFormula().Len() > 0)
-            DebugDialog->labelFormula->SetLabel(wxString::Format(wxT("Formula : %s = %f"), Calc->GetFormula().c_str(), Calc->GetLastResult()));
-        LogData = Calc->GetLog();
-        DebugDialog->memoDebug->Clear();
-        for (i=0 ; i<LogData.GetCount() ; i++)
-            DebugDialog->memoDebug->AppendText(wxString::Format(wxT("%s\r\n"), LogData.Item(i).c_str()));
-        DebugDialog->memoDebug->AppendText(wxString::Format(wxT("\r\n\r\nResult : %f\r\nState : %s\r\nTip : %s\r\n\r\n"), Calc->GetLastResult(), Calc->TranslateError(Calc->GetLastError()).c_str(), Calc->GetIndicator().c_str()));
-        DebugDialog->ShowModal();
-        DebugDialog->Destroy();
-        wxDELETE(DebugDialog);
-    #else
-        wxMessageDialog(NULL, wxT("This feature is not available when \"wxECM_USEDEBUG\" is not defined in \"ec_defs.h\"."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
-    #endif
-}
-
-void wxCalcFrame::OnMenuQuitClick(wxCommandEvent& event)
-{
-    this->Close();
-}
-
-void wxCalcFrame::OnMenuSimplifyClick(wxCommandEvent& event)
-{
-    wxString Buffer = GetCurrentFormula();
-    Calc->Simplify(&Buffer);
-    EditFormula->SetValue(Buffer);
-    EditFormula->SetInsertionPointEnd();
-    StatusBar->SetStatusText(wxT("Simplification done"), STATUS_INFO);
-}
-
-void wxCalcFrame::OnMenuIsValidClick(wxCommandEvent& event)
-{
-    wxString Buffer = GetCurrentFormula();
-    if (Calc->IsValid(&Buffer))
-        ShowMessage(wxT("God (or not so far) says your formula will be accepted."));
-    else
-        ShowMessage(wxT("The formula you are currently typing does not appear to be valid."), wxICON_ERROR);
-}
-
-void wxCalcFrame::OnMenuCloseBracketsClick(wxCommandEvent& event)
-{
-    wxString Buffer = GetCurrentFormula();
-    wxInt32 BrDelta, i;
-    //-- Action !
-    BrDelta = CountChar(&Buffer, '(') - CountChar(&Buffer, ')');
-    if (BrDelta > 0)
-        for (i=0 ; i<BrDelta ; i++)
-            Buffer = Buffer.Append(wxT(")"));
-    if (BrDelta < 0)
-        for (i=0 ; i<-BrDelta ; i++)
-            Buffer = wxString::Format(wxT("(%s"), Buffer.c_str());
-    EditFormula->SetValue(Buffer);
-    EditFormula->SetInsertionPointEnd();
-    if (BrDelta < 0)
-        BrDelta = -BrDelta;
-    StatusBar->SetStatusText(wxString::Format(wxT("%d brackets added"), BrDelta), STATUS_INFO);
-}
-
-void wxCalcFrame::OnMenuResetConstsClick(wxCommandEvent& event)
-{
-    Calc->ResetConstants();
-    UpdateUI();
-    StatusBar->SetStatusText(wxT("Constants reinitialized"), STATUS_INFO);
-}
-
-void wxCalcFrame::OnMenuCompactClick(wxCommandEvent& event)
-{
-    Compact(MenuCompact->IsChecked());
-}
-
-void wxCalcFrame::OnMenuAboutClick(wxCommandEvent& event)
-{
+    wxArrayString LogData;
     wxAboutDialogInfo About;
-    About.SetName(wxECD_SOFTWARE);
-    About.SetIcon(wxIcon(icon_xpm));
-    About.SetVersion(wxString::Format(wxT("v%s"), wxECD_VERSION));
-    About.SetCopyright(wxT("Copyright © 2008-2009, ecrucru"));
-    About.SetDescription(wxT("\nMulti-usage mathematical interpreter\n"));
-    About.SetWebSite(wxECD_URL);
-    #if wxUSE_UNICODE
-        About.SetLicence(wxString::Format(wxT("Compiled with %s Unicode."), wxVERSION_STRING));
-    #else
-        About.SetLicence(wxString::Format(wxT("Compiled with %s."), wxVERSION_STRING));
-    #endif
-    wxAboutBox(About);
+    wxDebugWindow *DebugDialog = NULL;
+
+    switch (event.GetId())
+    {
+        case MENU_COPYRESULT:
+            CopyToClipboard(wxString::Format(wxT("%f"), Calc->GetLastResult()));
+            break;
+
+        case MENU_COPYFORMULA:
+            CopyToClipboard(Calc->GetFormula());
+            break;
+
+        case MENU_PASTE:
+            HasSomething = false;
+            Buffer.Empty();
+            if (wxTheClipboard->Open())
+            {
+                if (wxTheClipboard->IsSupported(wxDF_TEXT))
+                {
+                    wxTheClipboard->GetData(Content);
+                    Buffer = Content.GetText();
+                    //-- We get the first line only :)
+                    if (Buffer.Find(wxT("\r")) != wxNOT_FOUND)
+                        Buffer = Buffer.BeforeFirst(wxT('\r'));
+                    if (Buffer.Find(wxT("\n")) != wxNOT_FOUND)
+                        Buffer = Buffer.BeforeFirst(wxT('\n'));
+                    HasSomething = (Buffer.Len() > 0);
+                }
+                wxTheClipboard->Close();
+            }
+            if (HasSomething)
+            {
+                EditFormula->SetValue(Buffer);
+                EditFormula->SetInsertionPointEnd();
+            }
+            else
+                ShowMessage(wxT("The clipboard does not contain a valid content."), wxICON_ERROR);   
+            break;
+
+        case MENU_DEBUG:
+            #ifdef wxECM_USEDEBUG
+                DebugDialog = new wxDebugWindow(this);
+                if (Calc->GetFormula().Len() > 0)
+                    DebugDialog->labelFormula->SetLabel(wxString::Format(wxT("Formula : %s = %f"), Calc->GetFormula().c_str(), Calc->GetLastResult()));
+                LogData = Calc->GetLog();
+                DebugDialog->memoDebug->Clear();
+                for (i=0 ; i<(int)LogData.GetCount() ; i++)
+                    DebugDialog->memoDebug->AppendText(wxString::Format(wxT("%s\r\n"), LogData.Item(i).c_str()));
+                DebugDialog->memoDebug->AppendText(wxString::Format(wxT("\r\n\r\nResult : %f\r\nState : %s\r\nTip : %s\r\n\r\n"), Calc->GetLastResult(), Calc->TranslateError(Calc->GetLastError()).c_str(), Calc->GetIndicator().c_str()));
+                DebugDialog->ShowModal();
+                DebugDialog->Destroy();
+                wxDELETE(DebugDialog);
+            #else
+                wxMessageDialog(NULL, wxT("This feature is not available when \"wxECM_USEDEBUG\" is not defined in \"ec_defs.h\"."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
+            #endif
+            break;
+
+        case MENU_QUIT:
+            this->Close();
+            break;
+
+        case MENU_SIMPLIFY:
+            Buffer = GetCurrentFormula();
+            Calc->Simplify(&Buffer);
+            EditFormula->SetValue(Buffer);
+            EditFormula->SetInsertionPointEnd();
+            StatusBar->SetStatusText(wxT("Simplification done"), STATUS_INFO);
+            break;
+
+        case MENU_ISVALID:
+            Buffer = GetCurrentFormula();
+            if (Calc->IsValid(&Buffer))
+                ShowMessage(wxT("Your formula will be accepted."));
+            else
+                ShowMessage(wxT("The formula you are currently typing does not appear to be valid."), wxICON_ERROR);
+            break;
+
+        case MENU_CLOSEBRACKETS:
+            Buffer = GetCurrentFormula();
+
+            //-- Action !
+            BrDelta = CountChar(&Buffer, '(') - CountChar(&Buffer, ')');
+            if (BrDelta > 0)
+                for (i=0 ; i<BrDelta ; i++)
+                    Buffer = Buffer.Append(wxT(")"));
+            if (BrDelta < 0)
+                for (i=0 ; i<-BrDelta ; i++)
+                    Buffer = wxString::Format(wxT("(%s"), Buffer.c_str());
+            EditFormula->SetValue(Buffer);
+            EditFormula->SetInsertionPointEnd();
+            if (BrDelta < 0)
+                BrDelta = -BrDelta;
+            StatusBar->SetStatusText(wxString::Format(wxT("%d brackets added"), BrDelta), STATUS_INFO);
+            break;
+
+        case MENU_RESETCONST:
+            Calc->ResetConstants();
+            UpdateUI();
+            StatusBar->SetStatusText(wxT("Constants reinitialized"), STATUS_INFO);
+            break;
+
+        case MENU_COMPACT:
+            Compact(MenuCompact->IsChecked());
+            break;
+
+        case MENU_ABOUT:
+            About.SetName(wxECD_SOFTWARE);
+            About.SetIcon(wxIcon(icon_xpm));
+            About.SetVersion(wxString::Format(wxT("v%s"), wxECD_VERSION));
+            About.SetCopyright(wxT("Copyright © 2008-2009, ecrucru"));
+            About.SetDescription(wxT("\nMathematical library\n"));
+            About.SetWebSite(wxECD_URL);
+            #if wxUSE_UNICODE
+                About.SetLicence(wxString::Format(wxT("Compiled with %s Unicode."), wxVERSION_STRING));
+            #else
+                About.SetLicence(wxString::Format(wxT("Compiled with %s."), wxVERSION_STRING));
+            #endif
+            wxAboutBox(About);
+            break;
+
+    }
 }
 
 void wxCalcFrame::OnCloseEvent(wxCloseEvent& event)
@@ -737,239 +690,204 @@ void wxCalcFrame::OnCheckBoxClick(wxCommandEvent& event)
             return (!IsArcTrigo() ? Function : wxT("a")+Function);
     }
 
-void wxCalcFrame::OnClearClick(wxCommandEvent& event)
+void wxCalcFrame::OnButtonClick(wxCommandEvent& event)
 {
-    StatusBar->SetStatusText(wxEmptyString, STATUS_INFO);
-    EditFormula->SetValue(wxEmptyString);
-    EditFormula->SetFocus();
-    //Memory = 0;
-    //Calc->DeleteConstant(MEMORY_NAME);
-    UpdateUI();
-}
-
-void wxCalcFrame::OnEgalClick(wxCommandEvent& event)
-{
-    wxString Buffer = GetCurrentFormula();
-    Calc->Reset(true, false);
-    Calc->SetFormula(Buffer);
-    if (Calc->GetLastError() == wxECE_NOERROR)
-        EditFormula->SetValue(wxString::Format(wxT("%s = %f"), Calc->GetFormula().c_str(), Calc->Compute()));
-    else
-        EditFormula->SetValue(Buffer);
-    EditFormula->SetFocus();
-    EditFormula->SetInsertionPointEnd();
-    UpdateUI();
-    StatusBar->SetStatusText(Calc->TranslateError(Calc->GetLastError()), STATUS_INFO);
-}
-
-void wxCalcFrame::OnCallClick(wxCommandEvent& event)
-{
-    ApplyString(MEMORY_NAME);
-}
-
-void wxCalcFrame::OnSinClick(wxCommandEvent& event)
-{
-    ApplyFunction(TranslateTrigoFunction(wxT("sin")));
-}
-
-void wxCalcFrame::OnExpClick(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("exp"));
-}
-
-void wxCalcFrame::OnLnClick(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("ln"));
-}
-
-void wxCalcFrame::OnBracketOpenClick(wxCommandEvent& event)
-{
-    ApplyBracket(wxT('('));
-}
-
-void wxCalcFrame::On7Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('7'));
-}
-
-void wxCalcFrame::On8Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('8'));
-}
-
-void wxCalcFrame::On9Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('9'));
-}
-
-void wxCalcFrame::OnDivClick(wxCommandEvent& event)
-{
-    ApplyOperator(wxT('/'));
-}
-
-void wxCalcFrame::OnSetClick(wxCommandEvent& event)
-{
-    double Value = Calc->GetLastResult();
-    Calc->SetConstant(MEMORY_NAME, Value);        // will redefine it implicitely
-    UpdateUI();
-    StatusBar->SetStatusText(wxString::Format(wxT("%f stored as '%s'"), Value, MEMORY_NAME), STATUS_INFO);
-}
-
-void wxCalcFrame::OnCosClick(wxCommandEvent& event)
-{
-    ApplyFunction(TranslateTrigoFunction(wxT("cos")));
-}
-
-void wxCalcFrame::OnPow10Click(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("10^"));
-}
-
-void wxCalcFrame::OnLogClick(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("log"));
-}
-
-void wxCalcFrame::OnBracketCloseClick(wxCommandEvent& event)
-{
-    ApplyBracket(wxT(')'));
-}
-
-void wxCalcFrame::On4Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('4'));
-}
-
-void wxCalcFrame::On5Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('5'));
-}
-
-void wxCalcFrame::On6Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('6'));
-}
-
-void wxCalcFrame::OnMultClick(wxCommandEvent& event)
-{
-    ApplyOperator(wxT('*'));
-}
-
-void wxCalcFrame::OnMemoryPlusClick(wxCommandEvent& event)
-{
-    double ValueOld, ValueNew;
-    wxString MemoryName = MEMORY_NAME;
-    Calc->GetConstant(MemoryName, &ValueOld);
-    ValueNew = Calc->GetLastResult();
-    Calc->SetConstant(MEMORY_NAME, ValueOld + ValueNew);
-    UpdateUI();
-    StatusBar->SetStatusText(wxString::Format(wxT("%.3f + %.3f = %f"), ValueOld, ValueNew, ValueOld+ValueNew), STATUS_INFO);
-}
-
-void wxCalcFrame::OnTanClick(wxCommandEvent& event)
-{
-    ApplyFunction(TranslateTrigoFunction(wxT("tan")));
-}
-
-void wxCalcFrame::OnPowerClick(wxCommandEvent& event)
-{
-    ApplyOperator(wxT('^'));
-}
-
-void wxCalcFrame::OnSq2Click(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("sqr"));
-}
-
-void wxCalcFrame::OnSqrtClick(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("sqrt"));
-}
-
-void wxCalcFrame::On1Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('1'));
-}
-
-void wxCalcFrame::On2Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('2'));
-}
-
-void wxCalcFrame::On3Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('3'));
-}
-
-void wxCalcFrame::OnPlusClick(wxCommandEvent& event)
-{
-    ApplyOperator(wxT('+'));
-}
-
-void wxCalcFrame::OnDefClick(wxCommandEvent& event)
-{
-    double Value;
-    wxString NewConstantName;
-
-    Value = Calc->GetLastResult();
-    NewConstantName = wxGetTextFromUser(wxString::Format(wxT("Constant's name for '%f' :"), Value), wxT("(Re)define a constant"), wxEmptyString);
-    if (NewConstantName != wxEmptyString)
-    {
-        Calc->SetConstant(NewConstantName, Value);
-        UpdateUI();
-        StatusBar->SetStatusText(wxString::Format(wxT("'%s' set as %f"), NewConstantName.c_str(), Value), STATUS_INFO);
-    }
-}
-
-void wxCalcFrame::OnPiClick(wxCommandEvent& event)
-{
-    ApplyString(wxT("pi"));
-}
-
-void wxCalcFrame::OnPercentClick(wxCommandEvent& event)
-{
-    ApplyString(wxT("*percent"));
-}
-
-void wxCalcFrame::OnEClick(wxCommandEvent& event)
-{
-    ApplyChar(wxT('e'));
-}
-
-void wxCalcFrame::OnReverseClick(wxCommandEvent& event)
-{
-    ApplyFunction(wxT("inv"));
-}
-
-void wxCalcFrame::On0Click(wxCommandEvent& event)
-{
-    ApplyChar(wxT('0'));
-}
-
-void wxCalcFrame::OnCommaClick(wxCommandEvent& event)
-{
-    ApplyChar(wxT('.'));
-}
-
-void wxCalcFrame::OnPlusMinusClick(wxCommandEvent& event)
-{
-    wxString Buffer;
+    wxString Buffer, MemoryName, NewConstantName;
+    double Value, ValueOld, ValueNew;
     long From, To;
 
-    EditFormula->GetSelection(&From, &To);
-    if (From != To)
+    switch (event.GetId())
     {
-        Buffer = EditFormula->GetStringSelection();
-        if (Buffer.StartsWith(wxT("-")))
-            EditFormula->Replace(From, To, Buffer.Right(1));
-        else
-            EditFormula->Replace(From, To, wxString::Format(wxT("-%s"), Buffer.c_str()));
-    } else
-        ApplyChar(wxT('-'));
-    EditFormula->SetFocus();
-}
+        case ID_CLR:
+            StatusBar->SetStatusText(wxEmptyString, STATUS_INFO);
+            EditFormula->SetValue(wxEmptyString);
+            EditFormula->SetFocus();
+            //Memory = 0;
+            //Calc->DeleteConstant(MEMORY_NAME);
+            UpdateUI();
+            break;
 
-void wxCalcFrame::OnMinusClick(wxCommandEvent& event)
-{
-    ApplyOperator(wxT('-'));
+        case ID_EQUAL:
+            Buffer = GetCurrentFormula();
+            Calc->Reset(true, false);
+            Calc->SetFormula(Buffer);
+            if (Calc->GetLastError() == wxECE_NOERROR)
+                EditFormula->SetValue(wxString::Format(wxT("%s = %f"), Calc->GetFormula().c_str(), Calc->Compute()));
+            else
+                EditFormula->SetValue(Buffer);
+            EditFormula->SetFocus();
+            EditFormula->SetInsertionPointEnd();
+            UpdateUI();
+            StatusBar->SetStatusText(Calc->TranslateError(Calc->GetLastError()), STATUS_INFO);
+            break;
+
+        case ID_CALL:
+            ApplyString(MEMORY_NAME);
+            break;
+
+        case ID_SIN:
+            ApplyFunction(TranslateTrigoFunction(wxT("sin")));
+            break;
+
+        case ID_EXP:
+            ApplyFunction(wxT("exp"));
+            break;
+
+        case ID_LN:
+            ApplyFunction(wxT("ln"));
+            break;
+
+        case ID_BRACKETOPEN:
+            ApplyBracket(wxT('('));
+            break;
+
+        case ID_7:
+            ApplyChar(wxT('7'));
+            break;
+
+        case ID_8:
+            ApplyChar(wxT('8'));
+            break;
+
+        case ID_9:
+            ApplyChar(wxT('9'));
+            break;
+
+        case ID_DIV:
+            ApplyOperator(wxT('/'));
+            break;
+
+        case ID_SET:
+            Value = Calc->GetLastResult();
+            Calc->SetConstant(MEMORY_NAME, Value);        // will redefine it implicitely
+            UpdateUI();
+            StatusBar->SetStatusText(wxString::Format(wxT("%f stored as '%s'"), Value, MEMORY_NAME), STATUS_INFO);
+            break;
+
+        case ID_COS:
+            ApplyFunction(TranslateTrigoFunction(wxT("cos")));
+            break;
+
+        case ID_POW10:
+            ApplyFunction(wxT("10^"));
+            break;
+
+        case ID_LOG:
+            ApplyFunction(wxT("log"));
+            break;
+
+        case ID_BRACKETCLOSE:
+            ApplyBracket(wxT(')'));
+            break;
+
+        case ID_4:
+            ApplyChar(wxT('4'));
+            break;
+
+        case ID_5:
+            ApplyChar(wxT('5'));
+            break;
+
+        case ID_6:
+            ApplyChar(wxT('6'));
+            break;
+
+        case ID_MULT:
+            ApplyOperator(wxT('*'));
+            break;
+
+        case ID_MP:
+            MemoryName = MEMORY_NAME;
+            Calc->GetConstant(MemoryName, &ValueOld);
+            ValueNew = Calc->GetLastResult();
+            Calc->SetConstant(MEMORY_NAME, ValueOld + ValueNew);
+            UpdateUI();
+            StatusBar->SetStatusText(wxString::Format(wxT("%.3f + %.3f = %f"), ValueOld, ValueNew, ValueOld+ValueNew), STATUS_INFO);
+            break;
+
+        case ID_TAN:
+            ApplyFunction(TranslateTrigoFunction(wxT("tan")));
+            break;
+
+        case ID_POWER:
+            ApplyOperator(wxT('^'));
+            break;
+
+        case ID_SQ2:
+            ApplyFunction(wxT("sqr"));
+            break;
+
+        case ID_SQRT:
+            ApplyFunction(wxT("sqrt"));
+            break;
+
+        case ID_1:
+            ApplyChar(wxT('1'));
+            break;
+
+        case ID_2:
+            ApplyChar(wxT('2'));
+            break;
+
+        case ID_3:
+            ApplyChar(wxT('3'));
+            break;
+
+        case ID_PLUS:
+            ApplyOperator(wxT('+'));
+            break;
+
+        case ID_DEF:
+            Value = Calc->GetLastResult();
+            NewConstantName = wxGetTextFromUser(wxString::Format(wxT("Constant's name for '%f' :"), Value), wxT("(Re)define a constant"), wxEmptyString);
+            if (NewConstantName != wxEmptyString)
+            {
+                Calc->SetConstant(NewConstantName, Value);
+                UpdateUI();
+                StatusBar->SetStatusText(wxString::Format(wxT("'%s' set as %f"), NewConstantName.c_str(), Value), STATUS_INFO);
+            }
+            break;
+
+        case ID_PI:
+            ApplyString(wxT("pi"));
+            break;
+
+        case ID_PERCENT:
+            ApplyString(wxT("*percent"));
+            break;
+
+        case ID_E:
+            ApplyChar(wxT('e'));
+            break;
+
+        case ID_REVERSE:
+            ApplyFunction(wxT("inv"));
+            break;
+
+        case ID_0:
+            ApplyChar(wxT('0'));
+            break;
+
+        case ID_COMMA:
+            ApplyChar(wxT('.'));
+            break;
+
+        case ID_PLUSMINUS:
+            EditFormula->GetSelection(&From, &To);
+            if (From != To)
+            {
+                Buffer = EditFormula->GetStringSelection();
+                if (Buffer.StartsWith(wxT("-")))
+                    EditFormula->Replace(From, To, Buffer.Right(1));
+                else
+                    EditFormula->Replace(From, To, wxString::Format(wxT("-%s"), Buffer.c_str()));
+            } else
+                ApplyChar(wxT('-'));
+            EditFormula->SetFocus();
+            break;
+
+        case ID_MINUS:
+            ApplyOperator(wxT('-'));
+            break;
+    }
 }

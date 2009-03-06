@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include "wx/checklst.h"
 #include "wx/fontdlg.h"
 #include "../../lib/ec_plot.h"
+#include "../../lib/ec_complex.h"
 
 //------------------------------------------
 
@@ -93,6 +94,7 @@ class wxPlotFrame : public wxFrame
         wxCheckBox *checkShowAxis;
         wxCheckBox *checkReticule;
         wxCheckBox *checkPolarGrid;
+        wxStaticText *labelXY;
 
         void DoRefreshCurveList();
 
@@ -100,23 +102,10 @@ class wxPlotFrame : public wxFrame
         wxPlotFrame(wxWindow *parent);
         ~wxPlotFrame();
 
-        void OnAddClick(wxCommandEvent& event);
-        void OnAddDemoClick(wxCommandEvent& event);
+        void OnButtonClick(wxCommandEvent& event);
         void OnFuncListCheck(wxCommandEvent& event);
-        void OnDeleteClick(wxCommandEvent& event);
-        void OnTangentClick(wxCommandEvent& event);
-        void OnDerivateClick(wxCommandEvent& event);
-        void OnAxisFontClick(wxCommandEvent& event);
-        void OnDefaultGridClick(wxCommandEvent& event);
-        void OnGridApplyClick(wxCommandEvent& event);
-        void OnFitAxisClick(wxCommandEvent& event);
-        void OnResetClick(wxCommandEvent& event);
-        void OnOrthonormalizeClick(wxCommandEvent& event);
-        void OnUnzoomClick(wxCommandEvent& event);
-        void OnShowGridClick(wxCommandEvent& event);
-        void OnShowAxisClick(wxCommandEvent& event);
-        void OnShowReticuleClick(wxCommandEvent& event);
-        void OnPolarGridClick(wxCommandEvent& event);
+        void OnBoxCheck(wxCommandEvent& event);
+        void OnMouseEvent(wxMouseEvent& event);
 };
 
 #endif

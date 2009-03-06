@@ -17,32 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef app_h
-#define app_h
+#if wxUSE_XRC
+
+    #include "wx/xrc/xh_wxecplot.h"
+
+    IMPLEMENT_DYNAMIC_CLASS(wxEcPlotXmlHandler, wxXmlResourceHandler)
 
 //------------------------------------------
 
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
-
-#include "plotdemo.h"
-
-//------------------------------------------
-
-class wxPlotDemoApp: public wxApp
+wxEcPlotXmlHandler::wxEcPlotXmlHandler() : wxXmlResourceHandler()
 {
-    private:
-        wxPlotFrame *mainFrame;
+    AddWindowStyles();
+}
 
-    public:
-        virtual bool OnInit();
-};
+wxObject *wxEcPlotXmlHandler::DoCreateResource()
+{
+    XRC_MAKE_INSTANCE(plot, wxEcPlot)
+    SetupWindow(plot);
+    return plot;
+}
 
-DECLARE_APP(wxPlotDemoApp)
+bool wxEcPlotXmlHandler::CanHandle(wxXmlNode *node)
+{
+    return IsOfClass(node, wxT("wxEcPlot"));
+}
 
 #endif

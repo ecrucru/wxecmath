@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
  * \file ec_engine.h
  * \brief Contains the mathematical interpreter
  * \author ecrucru
- * \version 0.6.1
- * \date January 2009
+ * \version 0.6.2
+ * \date August 2008
  *
  * The only class defined here is wxEcEngine and does not derive from another class.
  */
@@ -64,8 +64,7 @@ class WXDLLEXPORT wxEcEngine
         size_t m_offset;
         wxString m_formula, m_indicator;
         wxEcConstMap m_constants;
-        double m_lastresult, m_pool[wxECD_STACKMAX+1], m_antecomp[wxECD_STACKMAX+1],
-               TODO_GCC_NONSENSE_BUG_IN_WXENGINE_RESET_SAMPLE_INLINE;
+        double m_lastresult, m_pool[wxECD_STACKMAX+1], m_antecomp[wxECD_STACKMAX+1];
         bool m_internallog;
 
         wxEcPosition BracketLookup(wxString *expression);
@@ -191,12 +190,12 @@ class WXDLLEXPORT wxEcEngine
         /** Performs an approximation of the derivative of the loaded expression at a given point.
          * \param where The X-coordinate which must be evaluated.
          * \param result The pointer to the floating number which will contain df(x)/dx. It must be valid.
-         * \param atwhere A pointer to store f(x) as a floating number.
+         * \param storewhere A pointer to store f(x) as a floating number.
          * \return \a true on success, \a false on failure (see GetLastError() to know more about).
          * \see wxEcEngine::SetFormula()
          * \see wxECD_DXSTEP
          */
-        bool Derivate(double where, double *result, double *atwhere = NULL);
+        bool Derivate(double where, double *result, double *storewhere = NULL);
         /** Checks the validity of an expression. The method is based on a set of criteria, such as
          *  the number of brackets. The symbols used in the expression will not be validated.
          * \param expression A pointer to the expression to check.

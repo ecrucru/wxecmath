@@ -17,49 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
+#include "app.h"
+
+IMPLEMENT_APP(wxFractalApp)
 
 //------------------------------------------
 
-#include "../../lib/ec_defs.h"
-#include "../../lib/ec_engine.h"
-
-//------------------------------------------
-
-class wxSpeedApp : public wxApp
-{
-	virtual bool OnInit();
-};
-
-IMPLEMENT_APP(wxSpeedApp)
-
-bool wxSpeedApp::OnInit()
+bool wxFractalApp::OnInit()
 {
     wxApp::OnInit();
-
-    //-- Initialization
-    long i, start, end, numcomp=350000;
-    double speed;
-    wxEcEngine calculator;
-    calculator.SetFormula(wxT("(1+sqrt(5))/2-2*cos(2*pi/5)"));    //= 1
-
-    //-- Computes
-    start = wxGetLocalTime();
-    for (i=0 ; i<numcomp ; i++)
-        calculator.Compute();
-    end = wxGetLocalTime();
-
-    //-- Displays the result
-    if (end != start)
-    {
-        speed = numcomp / (end-start);
-        wxMessageDialog(NULL, wxString::Format(wxT("%.0f per second"), speed), wxT("Speed"), wxOK).ShowModal();
-    }
-    return false;
+    wxInitAllImageHandlers();
+    mainFrame = new wxFractalFrame(NULL);
+    SetTopWindow(mainFrame);
+    return true;
 }

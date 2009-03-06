@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,10 @@
  * \file ec_plot.h
  * \brief Includes the area to draw curves
  * \author ecrucru
- * \version 0.6.1
- * \date January 2009
+ * \version 0.6.2
+ * \date September 2008
+ *
+ * To use a wxEcPlot, you must include wxEcEngine in your project.
  */
 
 #ifndef ec_plot_h
@@ -51,26 +53,43 @@
 class WXDLLEXPORT wxEcAxis
 {
     public:
-        double MinVal;          /**< The minimal value of the axis. */
-        double MaxVal;          /**< The maximal value of the axis. */
-        double StepVal;         /**< The interval between two graduations. */
-        wxString Format;        /**< The format for the text. The default value is "%.1f". */
+        double MinValue;        /**< The minimal value of the axis. */
+        double MaxValue;        /**< The maximal value of the axis. */
+        double StepValue;       /**< The interval between two graduations. */
+        wxString Format;        /**< The format used to display floating values as text. */
+        bool Visible;           /**< The visibility of the axis (considered by wxEcPlot). */
+        wxColour Colour;        /**< The colour of the axis. */
+        bool ShowValues;        /**< The visibility of the text of the axis. */
+        wxFont Font;            /**< The font used to display the text. */
+        int ArrowSize;          /**< */
 
         /** The default constructor.
          * \param min The lower limit of the axis.
          * \param max The upper limit of the axis.
          * \param step The interval between two graduations.
-         * \remarks To set up the format of the text, you must call wxEcAxis::Format = wxT("...") ;
+         * \param colour The colour of the axis.
+         * \param visible The visibility of the axis.
+         * \param showvalues The visibility of the text of the axis.
+         * \remarks Format, Font and ArrowSize is automatically defined ;
          */
-        wxEcAxis(double min = -10, double max = 10, double step = 2) : MinVal(min), MaxVal(max), StepVal(step), Format(wxT("%.1f")) { }
+        wxEcAxis(double min = -10, double max = 10, double step = 2, wxColour colour = *wxRED, bool visible = true, bool showvalues=true)
+            : MinValue(min), MaxValue(max), StepValue(step), Colour(colour), Visible(visible),
+              ShowValues(showvalues), Format(wxT("%.1f")), ArrowSize(6),
+              Font(wxFont(8, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false)) { }
         /** The default destructor.
          */
         ~wxEcAxis() { }
-        /** Validates the axis to make it useful without generating unexpected bugs.
-         *  The call is only required when you define an axis from a user's input that
+        /** Corrects the axis to make it useful without generating unexpected bugs.
+         *  The call is required when you define an axis from a user's input that
          *  you have not checked beforehand.
          */
-        void CorrectMe();
+        void Validate();
+        /** Makes so that a reasonable number of graduations will be displayed.
+         */
+        void Recalibrate();
+        /** Resets the MinValue, MaxValue and StepValue to their default value.
+         */
+        void Reset();
 };
 
 //------------------------------------------
@@ -96,9 +115,10 @@ class WXDLLEXPORT wxEcCurve
                                      */
         double RangeMin;            /**< The lower limit, for X or T. To be taken into consideration, RangeEnabled must be \a true. */
         double RangeMax;            /**< The upper limit, for X or T. To be taken into consideration, RangeEnabled must be \a true. */
-        unsigned long NumPoints;    /**< The resolution to draw parametric and polar curves. */
+        unsigned long NumPoints;    /**< The resolution to draw parametric and polar curves, or the number of points for a point cloud. */
+        wxRealPoint *Cloud;         /**< Pointer to an array containing the points. Determine the number of points in wxEcCurve::NumPoints. */
 
-        /** The default constructor.
+        /** The default constructor. The curve is by default Defined and Enabled.
          */
         wxEcCurve(      wxString formulaX = wxEmptyString,
                         wxString formulaY = wxEmptyString,
@@ -109,7 +129,8 @@ class WXDLLEXPORT wxEcCurve
                         bool userange = false,
                         double minrange = -10,
                         double maxrange = 10,
-                        unsigned long numpoints = wxECD_RESOLUTION)
+                        unsigned long numpoints = wxECD_RESOLUTION,
+                        wxRealPoint* data = NULL)
             :
                         Defined(true), Enabled(true),
                         ExpressionX(formulaX),
@@ -121,7 +142,8 @@ class WXDLLEXPORT wxEcCurve
                         RangeEnabled(userange),
                         RangeMin(minrange),
                         RangeMax(maxrange),
-                        NumPoints(numpoints)
+                        NumPoints(numpoints),
+                        Cloud(data)
             {}
         /** The default destructor.
          */
@@ -131,13 +153,19 @@ class WXDLLEXPORT wxEcCurve
          *  The call is only required when you define a curve from a user's input that
          *  you have not checked beforehand.
          */
-        void CorrectMe();
+        void Validate();
         /** Parses a formula and applies the parameters. See the \ref syntax "HowTo" to know more about.
          * \param def The definition.
          * \param isPolar Indicates if the input is expected to define a \a wxECT_POLAR curve.
          * \remarks A colour is randomly chosen among a set of colours. You can edit it with wxEcCurve::Colour.
          */
         void Parse(wxString def, bool isPolar = false);
+        /** Sorts the cloud to draw it in the right order.
+         *  \a NumPoints is used to determine how many points to sort.
+         *  The sorting technique used is bubble sort.
+         * \return \a true if the data has been sorted.
+         */
+        bool SortCloud();
 };
 
 //------------------------------------------
@@ -160,28 +188,35 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         wxEcEngine *m_engine;
         wxEcAxis m_axisx, m_axisy;
         wxEcCurve m_curves[wxECD_CURVEMAX];
-        wxColour m_bgcolour, m_axiscolour, m_gridcolour, m_reticulecolour;
-        bool m_flatborder, m_showgrid, m_gridpolar, m_showaxis, m_showreticule;
-        int m_axisarrowsize;
-        wxFont m_axisfont;
+        wxColour m_backgroundcolour, m_gridcolour, m_reticulecolour;
+        bool m_gridvisible, m_gridpolar, m_flatborder, m_reticulevisible;
+        wxRealPoint m_reticule;
         bool m_locked;
         double m_ymaxfound, m_yminfound, m_zoomfactor;
         bool m_ymarker;
-        wxEcPointDouble m_reticule;
         wxString m_lasttangent;
 
         void DoDrawAxis(wxDC *context);
         void DoDrawCurve(wxDC *context, wxEcCurve *curve);
         void DoDrawParametricCurve(wxDC *context, wxEcCurve *curve);
         void DoDrawPolarCurve(wxDC *context, wxEcCurve *curve);
+        void DoDrawCloud(wxDC *context, wxEcCurve *curve);
         void DoDrawReticule(wxDC *context);
         void DoRedraw();
 
     public:
-        //-- Herited functions (to make them documentable by Doxygen)
-        /** Refreshes the component. It will cause the entire canvas/DC to be redrawn.
+        //-- Herited functions (to make them documented by Doxygen)
+        /** Refreshes the component and processes the queued messages.
+         * \warning This function is overriden from wxWindow and will cause wxTheApp->Yield() to be called.
+         *          If wxEcPlot doesn't do so, you will never able to call FitYAxis(), GetYMin() and GetYMax()
+         *          correctly in a busy process.
+         * \remark Update() is not overriden.
          */
-        void Refresh() { wxWindow::Refresh(); }
+        void Refresh()
+        {
+            wxWindow::Refresh();
+            wxTheApp->Yield();
+        }
 
         //-- Normal behaviour
         /** The default constructor.
@@ -202,16 +237,17 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         /** Resets the component, but colours are not affected. All the curves will be deleted.
          */
         void Reset()
-            {
-                m_ymarker = false;
-                RemoveAllCurves();
-                SetDefaultGrid();
-                SetAxisVisible(true);
-                SetGridVisible(true);
-                SetReticuleVisible(false);
-                Lock(false);
-                Refresh();
-            }
+        {
+            m_ymarker = false;
+            RemoveAllCurves();
+            SetDefaultGrid();
+            m_axisx.Visible = true;
+            m_axisy.Visible = true;
+            m_gridvisible = true;
+            m_reticulevisible = false;
+            Lock(false);
+            Refresh();
+        }
         /** Returns the equation you obtained at the last call of DrawTangent().
          */
         wxString GetLastTangentEquation() { return m_lasttangent; }
@@ -233,61 +269,65 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
 
         //-- Curves
         /** Adds a new curve.
-         * \param curve A pointer to the definition of the curve.
+         * \param curve An object defining the curve to add.
          * \return \a wxNOT_FOUND if memory is exceeded, a positive or null value on success.
          */
-        int AddCurve(wxEcCurve *curve)
-            {
-                int i;
-                for (i=0 ; i<wxECD_CURVEMAX ; i++)
-                    if (!m_curves[i].Defined)
-                        if (SetCurve(i, curve))
-                            return i;
-                        else
-                            return wxNOT_FOUND;
-                return wxNOT_FOUND;
-            }
+        int AddCurve(wxEcCurve curve)
+        {
+            int i;
+            for (i=0 ; i<wxECD_CURVEMAX ; i++)
+                if (!m_curves[i].Defined)
+                    if (SetCurve(i, &curve))
+                        return i;
+                    else
+                        return wxNOT_FOUND;
+            return wxNOT_FOUND;
+        }
         /** Returns the number of curves currently defined.
          */
         int CountCurve()
-            {
-                int i, result = 0;
-                for (i=0 ; i<wxECD_CURVEMAX ; i++)
-                    if (m_curves[i].Defined)
-                        result++;
-                return result;
-            }
+        {
+            int i, result = 0;
+            for (i=0 ; i<wxECD_CURVEMAX ; i++)
+                if (m_curves[i].Defined)
+                    result++;
+            return result;
+        }
         /** Removes the curve specified by its identifier.
          * \param index The identifier of the curve (obtained with AddCurve()).
          */
         void DeleteCurve(int index)
-            {
-                m_curves[index].Defined = false;
-                m_curves[index].Enabled = false;
-                m_curves[index].ExpressionX.Clear();
-                m_curves[index].ExpressionY.Clear();
-            }
+        {
+            m_curves[index].Defined = false;
+            m_curves[index].Enabled = false;
+            m_curves[index].ExpressionX.Clear();
+            m_curves[index].ExpressionY.Clear();
+        }
         /** Enables or disables the curve specified by its identifier.
          * \param index The identifier of the curve (obtained with AddCurve()).
          * \param state \a true to enable, \a false to disable.
          */
         void EnableCurve(int index, bool state)
-            {
-                m_curves[index].Enabled = state;
-            }
+        {
+            m_curves[index].Enabled = state;
+        }
         /** Returns a curve.
          * \param index The identifier of the curve (obtained with AddCurve()).
          * \return The curve "as is" : defined or not, enabled or not.
          */
-        wxEcCurve GetCurve(int index)
-            {
-                return m_curves[index];
-            }
+        wxEcCurve* GetCurve(int index)
+        {
+            return &(m_curves[index]);
+        }
         /** Sets a new curve at the given index.
          * \param index The position to edit.
          * \param curve The pointer to the new curve.
          */
         bool SetCurve(int index, wxEcCurve *curve)
+        {
+            if (curve == NULL)
+                return false;
+            if (curve->Type != wxECT_CLOUD)
             {
                 m_engine->Simplify(&(curve->ExpressionX));
                 if (!m_engine->IsValid(&(curve->ExpressionX)))
@@ -295,20 +335,21 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
                 m_engine->Simplify(&(curve->ExpressionY));
                 if ((curve->Type==wxECT_PARAMETRIC) && !m_engine->IsValid(&(curve->ExpressionY)))
                     return false;
-                m_curves[index] = *curve;
-                m_curves[index].Defined = true;
-                return true;
             }
+            m_curves[index] = *curve;
+            m_curves[index].Defined = true;
+            return true;
+        }
         /** Deletes all the curves.
          * \remarks This function call DeleteCurve() \a wxECD_CURVEMAX times.
          */
         void RemoveAllCurves()
-            {
-                int i;
-                for (i=0 ; i<wxECD_CURVEMAX ; i++)
-                    DeleteCurve(i);
-                //m_lasttangent.Clear(); It is not necessarily useful
-            }
+        {
+            int i;
+            for (i=0 ; i<wxECD_CURVEMAX ; i++)
+                DeleteCurve(i);
+            //m_lasttangent.Clear(); It is not necessarily useful
+        }
 
         //-- Conversions
         /** Converts floating values into coordinates of the plan.
@@ -352,86 +393,117 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         double YToValue(int Y);
 
         //-- Background & Axis
-        /** Returns the colour of the background.
+        /** Gets the colour of the background.
          */
-        wxColour GetBackgroundColor() { return m_bgcolour; }
-        /** Sets the new colour of the background.
-         * \param value The new colour to apply.
+        wxColour GetBackgroundColour() { return m_backgroundcolour; }
+        /** Sets the colour of the background.
          */
-        void SetBackgroundColor(wxColour value) { m_bgcolour = value; }
+        void SetBackgroundColour(wxColour value) { m_backgroundcolour = value; }
         /** Indicates if the control have a black border.
          */
-        bool GetFlatBorder() { return m_flatborder; }
-        /** Applies a new border, or remove it.
-         * \param value \a true to apply, \a false to remove.
+        bool GetFlatBorder() { return m_flatborder; };
+        /** Sets a solid border to the control, or not.
          */
         void SetFlatBorder(bool value) { m_flatborder = value; }
-
         /** Resets the grid.
          */
-        void SetDefaultGrid() { wxEcAxis def; m_axisx = def; m_axisy = def; m_gridpolar = false; }
-        /** Is the grid visible ?
+        void SetDefaultGrid()
+        {
+            wxEcAxis defaultAxis;
+            m_axisx = defaultAxis;
+            m_axisy = defaultAxis;
+            m_gridpolar = false;
+        }
+        /** Returns the visibility of the grid
          */
-        bool GetGridVisible() { return m_showgrid; }
-        /** Shows or hides the grid.
-         * \param value \a true to show, \a false to hide.
+        bool GetGridVisible() { return m_gridvisible; }
+        /** Sets the visibility of the grid
          */
-        void SetGridVisible(bool value) { m_showgrid = value; }
-        /** Returns \a true if the grid is currently displayed in polar mode. \a false indicates the cartesian mode.
+        void SetGridVisible(bool value) { m_gridvisible = value; }
+        /** Returns \a true if the grid is polar.
          */
         bool GetGridPolar() { return m_gridpolar; }
-        /** Sets or unsets the polar mode of the grid.
-         * \param value \a true to set, \a false to unset.
+        /** Defines a polar mode (\a true) or a cartesian mode (\a false)
          */
         void SetGridPolar(bool value) { m_gridpolar = value; }
-        /** Returns the color of the grid.
+        /** Gets the colour of the grid.
          */
-        wxColour GetGridColor() { return m_gridcolour; }
-        /** Sets the color of the grid.
+        wxColour GetGridColour() { return m_gridcolour; }
+        /** Sets the colour of the grid
          */
-        void SetGridColor(wxColour value) { m_gridcolour = value; }
+        void SetGridColour(wxColour value) { m_gridcolour = value; }
 
+        /** Gives a pointer to the axis currently used for X or Y.
+         * \param forX true returns for X, false returns for Y
+         */
+        wxEcAxis* GetAxis(bool forX) { return (forX ? &m_axisx : &m_axisy); }
         /** Applies a new configuration to the designed axis.
          * \param axis The new definition.
          * \param forX If \a true, X-axis will be modified, else it will be the Y-axis.
          */
         void SetAxis(wxEcAxis axis, bool forX=true) { if (forX) m_axisx = axis; else m_axisy = axis; }
-        /** Returns the visibility of the axis.
-         */
-        bool GetAxisVisible() { return m_showaxis; }
-        /** Shows or hides both axis.
-         * \param value \a true to show, \a false to hide.
-         */
-        void SetAxisVisible(bool value) { m_showaxis = value; }
-        /** Returns the color of the axis.
-         */
-        wxColour GetAxisColor() { return m_axiscolour; }
-        /** Sets the new color on both axis.
-         */
-        void SetAxisColor(wxColour value) { m_axiscolour = value; }
-        /** Gets the current font used for the text of the axis.
-         */
-        wxFont GetAxisFont() { return m_axisfont; }
-        /** Sets the new font to be used for the text of the axis.
-         * \param value The font.
-         * \remarks The colour cannot be changed with this function.
-         */
-        void SetAxisFont(wxFont value) { m_axisfont = value; }
         /** Fits the Y-axis to make all the enabled curves visible.
          *  You cannot use this function if the curves have not been drawn at least one time.
          *  Use Refresh() to do so.
+         * \return \a true if the Y-axis has been modified, else \a false.
          * \see GetYMin()
          * \see GetYMax()
+         * \see FitXAxis()
          */
-        void FitYAxis()
+        bool FitYAxis()
+        {
+            if (m_ymarker)
             {
-                if (m_ymarker)
-                {
-                    m_axisy.MaxVal = m_ymaxfound;
-                    m_axisy.MinVal = m_yminfound;
-                    RecalibrateAxis(false);
-                }
+                m_axisy.MaxValue = m_ymaxfound;
+                m_axisy.MinValue = m_yminfound;
+                m_axisy.Validate();
+                m_axisy.Recalibrate();
+                return true;
             }
+            else
+                return false;
+        }
+        /** By considering all the curves defined as \a wxECT_CLOUD, this function sets the X-coordinate
+         *  to allow the cloud to be correctly visible. To fit the second coordinate, use wxEcPlot::FitYAxis().
+         * \remarks This function doesn't care of other curves not typed as \a wxECT_CLOUD. In this case,
+         *          compare the new value of the axis with the old one.
+         * \return \a true if the axis has been edited, else \a false.
+         */
+        bool FitXAxis()
+        {
+            wxRealPoint point;
+            double newMin=0, newMax=0;
+            bool initialized = false;
+            unsigned int i, j;
+
+            //-- Action !
+            for (i=0 ; i<wxECD_CURVEMAX ; i++)
+                if ((m_curves[i].Defined) && (m_curves[i].Type==wxECT_CLOUD) && (m_curves[i].NumPoints>1))
+                    for (j=0 ; j<m_curves[i].NumPoints ; j++)
+                    {
+                        point = m_curves[i].Cloud[j];
+                        if (!initialized)
+                        {
+                            newMin = point.x;
+                            newMax = point.x;
+                            initialized = true;
+                        }
+                        if (point.x < newMin) newMin = point.x;
+                        if (point.x > newMax) newMax = point.x;
+                    }
+
+            //-- Result
+            if (/*initialized && */ (newMin < newMax))
+            {
+                m_axisx.MinValue = newMin;
+                m_axisx.MaxValue = newMax;
+                m_axisx.Validate();
+                m_axisx.Recalibrate();
+                return true;
+            }
+            else
+                return false;
+        }
         /** Returns the maximal value of Y found during the last refresh.
          * \see FitYAxis()
          */
@@ -440,85 +512,86 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
          * \see FitYAxis()
          */
         double GetYMin() { if (m_ymarker) return m_yminfound; else return 0; }
-        /** Makes the grid to be like squares. In such a grid, right angles are conserved.
-         *  Technically, it solves : YPerPixel() = XPerPixel();
-         *  The Y-axis will be symmetrical compared to zero.
+        /** This function solves YPerPixel()=XPerPixel(). The grid will look like
+         *  squares and right angles are possible.
+         * \param symetrical If \a false, Ymax will be adjusted.
+         *                   If \a true, Ymax and Ymin will be edited, and Ymin = -Ymin.
+         * \remarks Y-axis will be made symmetrical compared to zero.
          */
-        void Orthonormalize()
+        void Orthonormalize(bool symetrical = true)
+        {
+            int w, h;
+            this->GetSize(&w, &h);
+            double unit = XPerPixel();
+            if (symetrical)
             {
-                int w, h;
-                this->GetSize(&w, &h);
-                double unit = XPerPixel();
-                m_axisy.MaxVal = unit*h/2;
-                m_axisy.MinVal = -unit*h/2;
+                m_axisy.MaxValue = unit*h/2;
+                m_axisy.MinValue = -unit*h/2;
             }
-        /** Makes so that a reasonable number of graduations will be displayed on the given axis.
-         * \param forX If \a true, X-axis will be modified, else it will be the Y-axis.
-         */
-        void RecalibrateAxis(bool forX)
-            {
-                wxEcAxis *goal;
-                if (forX)
-                    goal = &m_axisx;
-                else
-                    goal = &m_axisy;
-                if ((goal->MaxVal - goal->MinVal) / goal->StepVal > wxECD_STEPSMAX)
-                    goal->StepVal = (goal->MaxVal - goal->MinVal)/wxECD_STEPSMAX;
-            }
+            else
+                m_axisy.MaxValue = m_axisy.MinValue + unit*h;
+        }
         /** Returns the current zoom factor.
          */
         double GetZoomFactor() { return m_zoomfactor; }
         /** Changes the zoom factor. The default value is \a wxECD_ZOOMFACTOR defined in ec_defs.h
+         * \return \a true on success, \a false if the factor is not correct.
          */
-        bool SetZoomFactor(double value) { if (value<=0) return false; m_zoomfactor = value; return true; }
+        bool SetZoomFactor(double value = wxECD_ZOOMFACTOR)
+        {
+            if (value<=0)
+                return false;
+            m_zoomfactor = value;
+            return true;
+        }
         /** Zooms out.
          * \see SetZoomFactor()
          */
         void Unzoom()
-            {
-                m_axisx.MinVal *= m_zoomfactor;
-                m_axisx.MaxVal *= m_zoomfactor;
-                m_axisy.MinVal *= m_zoomfactor;
-                m_axisy.MaxVal *= m_zoomfactor;
-                RecalibrateAxis(false);
-                RecalibrateAxis(true);
-            }
+        {
+            m_axisx.MinValue *= m_zoomfactor;
+            m_axisx.MaxValue *= m_zoomfactor;
+            m_axisx.Recalibrate();
+            m_axisy.MinValue *= m_zoomfactor;
+            m_axisy.MaxValue *= m_zoomfactor;
+            m_axisy.Recalibrate();
+        }
         /** Zooms in.
          * \see SetZoomFactor()
          */
         void Zoom()
-            {
-                m_axisx.MinVal /= m_zoomfactor;
-                m_axisx.MaxVal /= m_zoomfactor;
-                m_axisy.MinVal /= m_zoomfactor;
-                m_axisy.MaxVal /= m_zoomfactor;
-                RecalibrateAxis(false);
-                RecalibrateAxis(true);
-            }
+        {
+            m_axisx.MinValue /= m_zoomfactor;
+            m_axisx.MaxValue /= m_zoomfactor;
+            m_axisx.Recalibrate();
+            m_axisy.MinValue /= m_zoomfactor;
+            m_axisy.MaxValue /= m_zoomfactor;
+            m_axisy.Recalibrate();
+        }
 
+        //-- Reticule
         /** Sets the position of the reticule, relative to the axis.
-         * \param X The X-coordinate.
-         * \param Y The Y-coordinate.
+         * \param x The X-coordinate.
+         * \param y The Y-coordinate.
          */
-        void SetReticule(double X, double Y) { m_reticule = wxEcPointDouble(X,Y); }
-        /** Shows or hides the reticule.
-         * \param value \a true to show, \a false to hide.
+        void SetReticule(double x, double y) { m_reticule = wxRealPoint(x,y); }
+        /** Gets the visibility of the reticule.
          */
-        void SetReticuleVisible(bool value) { m_showreticule = value; }
-        /** Gets the color of the reticule.
+        bool GetReticuleVisible() { return m_reticulevisible; }
+        /** Sets the visibility of the reticule.
          */
-        wxColour GetReticuleColor() { return m_reticulecolour; }
-        /** Changes the color of the reticule.
+        void SetReticuleVisible(bool value) { m_reticulevisible = value; }
+        /** Gets the colour of the reticule.
          */
-        void SetReticuleColor(wxColour value) { m_reticulecolour = value; }
+        wxColour GetReticuleColour() { return m_reticulecolour; }
+        /** Sets the colour of the grid.
+         */
+        void SetReticuleColour(wxColour value) { m_reticulecolour = value; }
 
         //-- Events
         /** The event when a repaint is called.
          */
         void OnPaint(wxPaintEvent &event);
-        /** The event on the move of the mouse.
-         */
-        void OnMouse(wxMouseEvent &event);
         /** The event when the control is resized.
          */
         void OnResize(wxSizeEvent &event);

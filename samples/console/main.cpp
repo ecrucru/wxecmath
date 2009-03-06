@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 //------------------------------------------
 
-#define  wxECM_USEDEBUG
+// You may setup your project to include "wxECM_USEDEBUG" in the command line
 
 #include "wx/file.h"
 #include "../../lib/ec_defs.h"
@@ -35,7 +35,7 @@
 
 #define wxCONSOLEBUFFER        4096
 
-#if wxUSE_UNICODE
+#ifdef wxUSE_UNICODE
     #define uniPrint wprintf
     #define uniScan  wscanf
 #else
@@ -87,7 +87,9 @@ size_t ProcessConsole()
     wxEcEngine *calc;
     wxArrayString calcDump;
     double result;
-    size_t i;
+    #ifdef wxECM_USEDEBUG
+        unsigned int i;
+    #endif
 
     //-- Computes
     calc = new wxEcEngine();

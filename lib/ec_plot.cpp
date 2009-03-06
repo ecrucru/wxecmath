@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.1
+/*  wxEcMath - version 0.6.2
  *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,14 +21,12 @@
 
     BEGIN_EVENT_TABLE(wxEcPlot, wxWindow)
         EVT_PAINT(wxEcPlot::OnPaint)
-        EVT_LEFT_DOWN(wxEcPlot::OnMouse)
-        EVT_LEFT_DCLICK(wxEcPlot::OnMouse)
         EVT_SIZE(wxEcPlot::OnResize)
     END_EVENT_TABLE()
 
 //------------------------------------------
 
-#define wxAbs(a) (((a) < 0) ? -(a) : (a))
+#define wxEcAbs(a) (((a) < 0) ? -(a) : (a))
 
 static double square(double value)
 {
@@ -37,30 +35,43 @@ static double square(double value)
 
 //------------------------------------------
 
-void wxEcAxis::CorrectMe()
+void wxEcAxis::Validate()
 {
     double tmp;
-    if (MinVal > MaxVal)
+    if (MinValue > MaxValue)
     {
-        tmp = MaxVal;
-        MaxVal = MinVal;
-        MinVal = tmp;
+        tmp = MaxValue;
+        MaxValue = MinValue;
+        MinValue = tmp;
     }
-    if (MinVal == MaxVal)
+    if (MinValue == MaxValue)
     {
-        MinVal = -10;
-        MaxVal = 10;
-        StepVal = 1;
+        MinValue = -10;
+        MaxValue = 10;
+        StepValue = 1;
     }
-    if (StepVal < 0)
-        StepVal = -StepVal;
-    if (StepVal > MaxVal-MinVal)
-        StepVal = (MaxVal-MinVal)/10;
+    if (StepValue < 0)
+        StepValue = -StepValue;
+    if (StepValue > MaxValue-MinValue)
+        StepValue = (MaxValue-MinValue)/10;
+}
+
+void wxEcAxis::Recalibrate()
+{
+    if ((MaxValue - MinValue) / StepValue > wxECD_STEPSMAX)
+        StepValue = (MaxValue - MinValue)/wxECD_STEPSMAX;
+}
+
+void wxEcAxis::Reset()
+{
+    MinValue = -10;
+    MaxValue = 10;
+    StepValue = 1;
 }
 
 //------------------------------------------
 
-void wxEcCurve::CorrectMe()
+void wxEcCurve::Validate()
 {
     double tmp;
     if (RangeMin > RangeMax)
@@ -85,14 +96,16 @@ void wxEcCurve::Parse(wxString def, bool isPolar)
         Only a curve marked with "Enabled" & "Defined" can be displayed
     */
     wxEcEngine curvcalc;
-    wxColour curveColours[18] = {   wxColour(128,128,00), wxColour(128,128,204), wxColour(00,128,00), wxColour(128,204,128),
-                                    wxColour(204,128,00), wxColour(204,128,128), wxColour(204,128,204), wxColour(00,204,128),
-                                    wxColour(128,128,128), wxColour(00,204,00), wxColour(00,204,204), wxColour(00,128,128),
-                                    wxColour(204,204,204), wxColour(128,204,00), wxColour(128,204,204), wxColour(204,204,128),
-                                    wxColour(204,204,00), wxColour(00,128,204)
+    wxColour curveColours[18] = {   wxColour(128,128,00),  wxColour(128,128,204), wxColour(00,128,00),   wxColour(128,204,128),
+                                    wxColour(204,128,00),  wxColour(204,128,128), wxColour(204,128,204), wxColour(00,204,128),
+                                    wxColour(128,128,128), wxColour(00,204,00),   wxColour(00,204,204),  wxColour(00,128,128),
+                                    wxColour(204,204,204), wxColour(128,204,00),  wxColour(128,204,204), wxColour(204,204,128),
+                                    wxColour(204,204,00),  wxColour(00,128,204)
                                 };
     wxString domain, buffer;
     def = def.Trim(false).Trim(true);
+    if (def.Len() == 0)
+        return;
 
     //-- Definition
     if (def.Find(wxT('$')) != wxNOT_FOUND)
@@ -116,7 +129,8 @@ void wxEcCurve::Parse(wxString def, bool isPolar)
             if (curvcalc.GetLastError() != wxECE_NOERROR)
                 this->RangeMax = 10;
         }
-    } else
+    }
+    else
         this->RangeEnabled = false;
 
     //-- Sets type of curve
@@ -135,9 +149,34 @@ void wxEcCurve::Parse(wxString def, bool isPolar)
         this->ExpressionX = def.BeforeFirst(wxT(';')).Trim(true).Lower();
         this->ExpressionY = def.AfterFirst(wxT(';')).Trim(false).Lower();
         this->RangeEnabled = true;
-    } else
+    }
+    else
         this->ExpressionX = def.Lower();
     this->Colour = curveColours[rand() % 18];
+}
+
+bool wxEcCurve::SortCloud()
+{
+    unsigned int i, j;
+    double tmp;
+
+    if (Type != wxECT_CLOUD)
+        return false;
+
+    for (i=0 ; i<NumPoints-1 ; i++)
+        for (j=0 ; j<NumPoints-1 ; j++)
+            if (Cloud[j+1].x < Cloud[j].x)
+            {
+                //-- X
+                tmp = Cloud[j].x;
+                Cloud[j].x = Cloud[j+1].x;
+                Cloud[j+1].x = tmp;
+                //-- Y
+                tmp = Cloud[j].y;
+                Cloud[j].y = Cloud[j+1].y;
+                Cloud[j+1].y = tmp;
+            }
+    return true;
 }
 
 //------------------------------------------
@@ -149,22 +188,22 @@ wxEcPlot::wxEcPlot(wxWindow *parent, wxWindowID id, const wxPoint& pos, const wx
     m_engine->UseDebug(false);
     m_axisx = wxEcAxis();
     m_axisy = wxEcAxis();
-    m_bgcolour = *wxWHITE;
-    m_axiscolour = *wxRED;
+    m_backgroundcolour = *wxWHITE;
+    m_axisx.Colour = *wxRED;
+    m_axisy.Colour = *wxRED;
     m_gridcolour = wxColour(192,192,192);
     m_reticulecolour = wxColour(192,192,0);
     m_flatborder = true;
-    m_showgrid = true;
+    m_gridvisible = true;
     m_gridpolar = false;
-    m_showaxis = true;
-    m_showreticule = false;
-    m_axisarrowsize = 6;
-    m_axisfont = wxFont(8, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    m_axisx.Visible = true;
+    m_axisy.Visible = true;
+    m_reticulevisible = false;
     m_locked = false;
     m_ymaxfound = 0;
     m_yminfound = 0;
     m_zoomfactor = wxECD_ZOOMFACTOR;
-    m_reticule = wxEcPointDouble(0.0,0.0);
+    m_reticule = wxRealPoint(0.0,0.0);
     m_lasttangent.Clear();
     RemoveAllCurves();
 }
@@ -178,10 +217,6 @@ wxEcPlot::~wxEcPlot()
 void wxEcPlot::OnPaint(wxPaintEvent &event)
 {
     DoRedraw();
-}
-
-void wxEcPlot::OnMouse(wxMouseEvent &event)
-{
 }
 
 void wxEcPlot::OnResize(wxSizeEvent &event)
@@ -199,13 +234,16 @@ void wxEcPlot::SetUnit(double perpixel, bool forX)
         perpixel = -perpixel;
     if (forX)
     {
-        m_axisx.MinVal = -w*perpixel/2;
-        m_axisx.MaxVal = w*perpixel/2;
-    } else {
-        m_axisy.MinVal = -h*perpixel/2;
-        m_axisy.MaxVal = h*perpixel/2;
+        m_axisx.MinValue = -w*perpixel/2;
+        m_axisx.MaxValue = w*perpixel/2;
+        m_axisx.Recalibrate();
     }
-    RecalibrateAxis(forX);
+    else
+    {
+        m_axisy.MinValue = -h*perpixel/2;
+        m_axisy.MaxValue = h*perpixel/2;
+        m_axisy.Recalibrate();
+    }
 }
 
 wxPoint wxEcPlot::CoupleValueToXY(double X, double Y)
@@ -215,21 +253,21 @@ wxPoint wxEcPlot::CoupleValueToXY(double X, double Y)
 
 bool wxEcPlot::IsVisible(double X, double Y)
 {
-    return (X>=m_axisx.MinVal) && (X<=m_axisx.MaxVal) && (Y>=m_axisy.MinVal) && (Y<=m_axisy.MaxVal);
+    return (X>=m_axisx.MinValue) && (X<=m_axisx.MaxValue) && (Y>=m_axisy.MinValue) && (Y<=m_axisy.MaxValue);
 }
 
 int wxEcPlot::ValueToX(double value)
 {
     int w, h;
     this->GetSize(&w, &h);
-    return (value - m_axisx.MinVal)/XPerPixel();
+    return (value - m_axisx.MinValue)/XPerPixel();
 }
 
 int wxEcPlot::ValueToY(double value)
 {
     int w, h;
     this->GetSize(&w, &h);
-    return (m_axisy.MaxVal-value)/YPerPixel();
+    return (m_axisy.MaxValue-value)/YPerPixel();
 }
 
 double wxEcPlot::XPerPixel()
@@ -239,12 +277,12 @@ double wxEcPlot::XPerPixel()
     if (w == 0)
         return 0;
     else
-        return (m_axisx.MaxVal - m_axisx.MinVal)/w;
+        return (m_axisx.MaxValue - m_axisx.MinValue)/w;
 }
 
 double wxEcPlot::XToValue(int X)
 {
-    return m_axisx.MinVal + X*XPerPixel();
+    return m_axisx.MinValue + X*XPerPixel();
 }
 
 double wxEcPlot::YPerPixel()
@@ -254,14 +292,14 @@ double wxEcPlot::YPerPixel()
     if (h == 0)
         return 0;
     else
-        return (m_axisy.MaxVal - m_axisy.MinVal)/h;
+        return (m_axisy.MaxValue - m_axisy.MinValue)/h;
 }
 
 double wxEcPlot::YToValue(int Y)
 {
     int w, h;
     this->GetSize(&w, &h);
-    return m_axisy.MinVal + (h-Y)*YPerPixel();
+    return m_axisy.MinValue + (h-Y)*YPerPixel();
 }
 
 //------------------------------------------
@@ -270,6 +308,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
 {
     if (m_locked)
         return;
+    wxPoint axisArrow[3];
 
     int w, h;
     this->GetSize(&w, &h);
@@ -280,11 +319,11 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
         context->SetPen(wxPen(*wxBLACK, 1, wxSOLID));
     else
         context->SetPen(wxNullPen);
-    context->SetBrush(wxBrush(m_bgcolour, wxSOLID));
-    context->DrawRectangle(0,0, w,h);
+    context->SetBrush(wxBrush(m_backgroundcolour, wxSOLID));
+    context->DrawRectangle(0, 0, w, h);
 
     //-- Grid
-    if (m_showgrid)
+    if (m_gridvisible)
     {
         double gridStep;
 
@@ -296,9 +335,9 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
             double r, rx, ry, rmax, t;
             wxPoint pointA, pointB;
 
-            //- Draws the theta-axis every 30°
-            r = sqrt(   square(wxMax(wxAbs(m_axisx.MinVal), wxAbs(m_axisx.MaxVal))) +
-                        square(wxMax(wxAbs(m_axisy.MinVal), wxAbs(m_axisy.MaxVal)))
+            //-- Draws the theta-axis every 30°
+            r = sqrt(   square(wxMax(wxEcAbs(m_axisx.MinValue), wxEcAbs(m_axisx.MaxValue))) +
+                        square(wxMax(wxEcAbs(m_axisy.MinValue), wxEcAbs(m_axisy.MaxValue)))
                     );
             for (i=0 ; i<6 ; i++)
             {
@@ -308,73 +347,89 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
                 context->DrawLine(pointA.x, pointA.y, pointB.x, pointB.y);
             }
 
-            //- Draws the r-circles references (relative to X only)
-            gridStep = m_axisx.StepVal;
-            if ((m_axisx.MaxVal - m_axisx.MinVal) / gridStep > wxECD_STEPSMAX)
-                gridStep = (m_axisx.MaxVal - m_axisx.MinVal)/wxECD_STEPSMAX;
-            rmax = wxMax(wxAbs(m_axisx.MinVal), wxAbs(m_axisx.MaxVal));
-            r = wxMin(0, wxMin(wxAbs(m_axisx.MinVal), wxAbs(m_axisx.MaxVal)));
+            //-- Draws the r-circles references (relative to X only)
+            gridStep = m_axisx.StepValue;
+            if ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX)
+                gridStep = (m_axisx.MaxValue - m_axisx.MinValue)/wxECD_STEPSMAX;
+            rmax = wxMax(wxEcAbs(m_axisx.MinValue), wxEcAbs(m_axisx.MaxValue));
+            r = wxMin(0, wxMin(wxEcAbs(m_axisx.MinValue), wxEcAbs(m_axisx.MaxValue)));
             r = ceil((r-gridStep) / gridStep)*gridStep;
             while (r < rmax)
             {
                 r += gridStep;
-                rx = wxAbs(this->ValueToX(r) - origin.x);
-                ry = wxAbs(this->ValueToY(r) - origin.y);
+                rx = wxEcAbs(this->ValueToX(r) - origin.x);
+                ry = wxEcAbs(this->ValueToY(r) - origin.y);
                 context->DrawEllipse(origin.x-rx, origin.y-ry, 2*rx, 2*ry);
                 context->DrawText(wxString::Format(m_axisy.Format, r), origin.x+rx+1, origin.y);
             }
 
-        } else {
+        }
+        else
+        {
             wxPoint textPoint;
             double gridPosition;
 
-            //- Vertical
-            gridStep = m_axisx.StepVal;
-            if ((m_axisx.MaxVal - m_axisx.MinVal) / gridStep > wxECD_STEPSMAX)
-                gridStep = (m_axisx.MaxVal - m_axisx.MinVal)/wxECD_STEPSMAX;
-            gridPosition = ceil((m_axisx.MinVal-gridStep) / gridStep)*gridStep;
-            while (gridPosition < m_axisx.MaxVal)
+            //-- Vertical
+            context->SetFont(m_axisx.Font);
+            gridStep = m_axisx.StepValue;
+            if ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX)
+                gridStep = (m_axisx.MaxValue - m_axisx.MinValue)/wxECD_STEPSMAX;
+            gridPosition = ceil((m_axisx.MinValue-gridStep) / gridStep)*gridStep;
+            while (gridPosition < m_axisx.MaxValue)
             {
                 context->DrawLine(this->ValueToX(gridPosition),0, this->ValueToX(gridPosition),h);
-                textPoint = this->CoupleValueToXY(gridPosition, 0);
-                context->DrawText(wxString::Format(m_axisx.Format, gridPosition), textPoint.x+1, textPoint.y);
+                if (m_axisx.ShowValues)
+                {
+                    textPoint = this->CoupleValueToXY(gridPosition, 0);
+                    context->DrawText(wxString::Format(m_axisx.Format, gridPosition), textPoint.x+1, textPoint.y);
+                }
                 gridPosition += gridStep;
             }
-            //- Horizontal
-            gridStep = m_axisy.StepVal;
-            if ((m_axisy.MaxVal - m_axisy.MinVal) / gridStep > wxECD_STEPSMAX)
-                gridStep = (m_axisy.MaxVal - m_axisy.MinVal)/wxECD_STEPSMAX;
-            gridPosition = ceil((m_axisy.MinVal-gridStep) / gridStep)*gridStep;
-            while (gridPosition < m_axisy.MaxVal)
+            //-- Horizontal
+            context->SetFont(m_axisy.Font);
+            gridStep = m_axisy.StepValue;
+            if ((m_axisy.MaxValue - m_axisy.MinValue) / gridStep > wxECD_STEPSMAX)
+                gridStep = (m_axisy.MaxValue - m_axisy.MinValue)/wxECD_STEPSMAX;
+            gridPosition = ceil((m_axisy.MinValue-gridStep) / gridStep)*gridStep;
+            while (gridPosition < m_axisy.MaxValue)
             {
                 context->DrawLine(0,this->ValueToY(gridPosition), w,this->ValueToY(gridPosition));
-                textPoint = this->CoupleValueToXY(0,gridPosition);
-                context->DrawText(wxString::Format(m_axisy.Format, gridPosition), textPoint.x+1, textPoint.y);
+                if (m_axisy.ShowValues)
+                {
+                    textPoint = this->CoupleValueToXY(0,gridPosition);
+                    context->DrawText(wxString::Format(m_axisy.Format, gridPosition), textPoint.x+1, textPoint.y);
+                }
                 gridPosition += gridStep;
             }
         }
     }
 
     //-- Axis
-    if (m_showaxis)
+    if (m_axisx.Visible)
     {
-        context->SetPen(wxPen(m_axiscolour, 1, wxSOLID));
-        context->DrawLine(origin.x,0, origin.x,h);            //vertical
+        context->SetPen(wxPen(m_axisx.Colour, 1, wxSOLID));
         context->DrawLine(0,origin.y, w,origin.y);            //horizontal
+    }
+    if (m_axisy.Visible)
+    {
+        context->SetPen(wxPen(m_axisy.Colour, 1, wxSOLID));
+        context->DrawLine(origin.x,0, origin.x,h);            //vertical
     }
 
     //-- Arrows
-    if (m_showaxis)
+    context->SetBrush(wxBrush(m_backgroundcolour, wxSOLID));
+    if (m_axisy.Visible)
     {
-        context->SetBrush(wxBrush(m_bgcolour, wxSOLID));
-        wxPoint axisArrow[3];
-        axisArrow[0] = wxPoint(origin.x, 0);
-        axisArrow[1] = wxPoint(origin.x - m_axisarrowsize, 2*m_axisarrowsize);
-        axisArrow[2] = wxPoint(origin.x + m_axisarrowsize, 2*m_axisarrowsize);
-        context->DrawPolygon(3, axisArrow);
         axisArrow[0] = wxPoint(w, origin.y);
-        axisArrow[1] = wxPoint(w-2*m_axisarrowsize, origin.y-m_axisarrowsize);
-        axisArrow[2] = wxPoint(w-2*m_axisarrowsize, origin.y+m_axisarrowsize);
+        axisArrow[1] = wxPoint(w-2*m_axisy.ArrowSize, origin.y-m_axisy.ArrowSize);
+        axisArrow[2] = wxPoint(w-2*m_axisy.ArrowSize, origin.y+m_axisy.ArrowSize);
+        context->DrawPolygon(3, axisArrow);
+    }
+    if (m_axisx.Visible)
+    {
+        axisArrow[0] = wxPoint(origin.x, 0);
+        axisArrow[1] = wxPoint(origin.x - m_axisx.ArrowSize, 2*m_axisx.ArrowSize);
+        axisArrow[2] = wxPoint(origin.x + m_axisx.ArrowSize, 2*m_axisx.ArrowSize);
         context->DrawPolygon(3, axisArrow);
     }
 
@@ -383,7 +438,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
     {
         context->SetPen(wxPen(*wxBLACK, 1, wxSOLID));
         context->SetBrush(*wxTRANSPARENT_BRUSH);
-        context->DrawRectangle(0,0, w,h);
+        context->DrawRectangle(0, 0, w, h);
     }
 }
 
@@ -391,15 +446,20 @@ void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
 {
     if (m_locked || !curve->Defined || !curve->Enabled)
         return;
-    if (curve->Type == wxECT_PARAMETRIC)
+    switch (curve->Type)
     {
-        DoDrawParametricCurve(context, curve);
-        return;
-    }
-    if (curve->Type == wxECT_POLAR)
-    {
-        DoDrawPolarCurve(context, curve);
-        return;
+        case wxECT_PARAMETRIC:
+            DoDrawParametricCurve(context, curve);
+            return;
+        case wxECT_POLAR:
+            DoDrawPolarCurve(context, curve);
+            return;
+        case wxECT_CLOUD:
+            DoDrawCloud(context, curve);
+            return;
+        case wxECT_CARTESIAN:
+            //It is the code below
+            ;
     }
 
     int w, h;
@@ -412,12 +472,14 @@ void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
 
     //-- Set the ranges
     int MinX, MaxX;
-    curve->CorrectMe();
+    curve->Validate();
     if (curve->RangeEnabled)
     {
-        MinX = this->ValueToX(wxMax(m_axisx.MinVal,  curve->RangeMin));
-        MaxX = this->ValueToX(wxMin(m_axisx.MaxVal,  curve->RangeMax));
-    } else {
+        MinX = this->ValueToX(wxMax(m_axisx.MinValue,  curve->RangeMin));
+        MaxX = this->ValueToX(wxMin(m_axisx.MaxValue,  curve->RangeMax));
+    }
+    else
+    {
         MinX = 0;
         MaxX = w;
     }
@@ -458,7 +520,8 @@ void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
         //-- Draws them
         if (curve->DotStyle)
             context->DrawPoint(destPoint);
-        else {
+        else
+        {
             context->DrawLine(anchor.x, anchor.y, destPoint.x, destPoint.y);
             anchor = destPoint;
             anchorOK = true;
@@ -470,7 +533,7 @@ void wxEcPlot::DoDrawParametricCurve(wxDC *context, wxEcCurve *curve)
 {
     if (m_locked || !curve->Defined || !curve->Enabled || ((curve->Type!=wxECT_PARAMETRIC) && (curve->Type!=wxECT_POLAR)) || !curve->RangeEnabled)
         return;
-    curve->CorrectMe();
+    curve->Validate();
 
     //-- Preparation
     double r=0, x=0, y=0;
@@ -493,7 +556,9 @@ void wxEcPlot::DoDrawParametricCurve(wxDC *context, wxEcCurve *curve)
             r = m_engine->Compute();
             errorX = m_engine->GetLastError();
             errorY = wxECE_NOERROR;
-        } else {
+        }
+        else
+        {
             m_engine->SetFormula(curve->ExpressionX);
             x = m_engine->Compute();
             errorX = m_engine->GetLastError();
@@ -530,7 +595,8 @@ void wxEcPlot::DoDrawParametricCurve(wxDC *context, wxEcCurve *curve)
         //-- Draws them
         if (curve->DotStyle)
             context->DrawPoint(destPoint);
-        else {
+        else
+        {
             context->DrawLine(anchor.x, anchor.y, destPoint.x, destPoint.y);
             anchor = destPoint;
             anchorOK = true;
@@ -547,14 +613,58 @@ void wxEcPlot::DoDrawPolarCurve(wxDC *context, wxEcCurve *curve)
     DoDrawParametricCurve(context, curve);
 }
 
+void wxEcPlot::DoDrawCloud(wxDC *context, wxEcCurve *curve)
+{
+    if (m_locked || !curve->Defined || !curve->Enabled || (curve->Type!=wxECT_CLOUD) || (curve->Cloud==NULL))
+        return;
+    wxRealPoint data;
+
+    //-- Preparation
+    wxPoint anchor, destPoint;
+    bool anchorOK = false;
+    unsigned long i;
+
+    //-- Draws the cloud
+    context->SetPen(wxPen(curve->Colour, curve->Width, wxSOLID));
+    context->SetBrush(wxBrush(curve->Colour, wxSOLID));
+    for (i=0 ; i<curve->NumPoints ; i++)
+    {
+        //-- Gets data
+        data = curve->Cloud[i];
+        destPoint = wxPoint(ValueToX(data.x), ValueToY(data.y));
+        //-- Draws point & line
+        context->DrawRectangle(destPoint.x-1, destPoint.y-1, 3, 3);
+        if (!anchorOK)
+        {
+            anchor = destPoint;
+            anchorOK = true;
+        }
+        else
+        {
+            if (!curve->DotStyle)
+                context->DrawLine(anchor.x, anchor.y, destPoint.x, destPoint.y);
+            anchor = destPoint;
+        }
+        //-- Finds Min/Max
+        if (!m_ymarker)
+        {
+            m_ymaxfound = data.y;
+            m_yminfound = data.y;
+            m_ymarker = true;
+        }
+        if (data.y > m_ymaxfound) m_ymaxfound = data.y;
+        if (data.y < m_yminfound) m_yminfound = data.y;
+    }
+}
+
 void wxEcPlot::DoDrawReticule(wxDC *context)
 {
-    if (!m_showreticule)
+    if (!m_reticulevisible)
         return;
     //-- Initializes
     int w, h;
     this->GetSize(&w, &h);
-    wxPoint retPos = wxPoint(this->ValueToX(m_reticule.X), this->ValueToY(m_reticule.Y));
+    wxPoint retPos = wxPoint(this->ValueToX(m_reticule.x), this->ValueToY(m_reticule.y));
     //-- Draws
     context->SetPen(wxPen(m_reticulecolour, 1, wxSHORT_DASH));
     context->DrawLine(retPos.x,0, retPos.x,h);
@@ -574,7 +684,6 @@ void wxEcPlot::DoRedraw()
     m_ymarker = false;
 
     wxPaintDC DC(this);
-    DC.SetFont(m_axisfont);
     DoDrawAxis(&DC);
     for (i=0 ; i<wxECD_CURVEMAX ; i++)
         if (m_curves[i].Defined)
@@ -616,8 +725,8 @@ bool wxEcPlot::DrawTangent(int index, double wishx)
     wxClientDC context(this);    //because "a wxClientDC must be constructed if an application wishes to paint on the client area of a window from outside an OnPaint event" (WXdocs)
     wxPoint p1, p2;
     m_lasttangent = wxString::Format(wxT("y = %f * x + %f"), fdx, fx-fdx*wishxoriginal);
-    p1 = CoupleValueToXY(m_axisx.MinVal, fx + fdx*(m_axisx.MinVal - wishx));
-    p2 = CoupleValueToXY(m_axisx.MaxVal, fx + fdx*(m_axisx.MaxVal - wishx));
+    p1 = CoupleValueToXY(m_axisx.MinValue, fx + fdx*(m_axisx.MinValue - wishx));
+    p2 = CoupleValueToXY(m_axisx.MaxValue, fx + fdx*(m_axisx.MaxValue - wishx));
     context.SetPen(wxPen(wxColour(255-curve->Colour.Red(), 255-curve->Colour.Green(), 255-curve->Colour.Blue()), 1, wxSOLID));
     context.DrawLine(p1.x, p1.y, p2.x, p2.y);
     return true;
@@ -633,11 +742,13 @@ bool wxEcPlot::DrawDerivative(int index)
     double from, to, step;
     if (curve->RangeEnabled)
     {
-        from = wxMax(curve->RangeMin, m_axisx.MinVal);
-        to = wxMin(curve->RangeMax, m_axisx.MaxVal);
-    } else {
-        from = m_axisx.MinVal;
-        to = m_axisx.MaxVal;
+        from = wxMax(curve->RangeMin, m_axisx.MinValue);
+        to = wxMin(curve->RangeMax, m_axisx.MaxValue);
+    }
+    else
+    {
+        from = m_axisx.MinValue;
+        to = m_axisx.MaxValue;
     }
     if (from > to)
         return false;
