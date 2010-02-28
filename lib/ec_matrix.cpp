@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ void wxEcMatrix::SetDimensionality(unsigned int line, unsigned column)
     unsigned int i;
 
     //-- Saves the dimensions
-    if ((line==0) || (column==0))
+    if ((line == 0) || (column == 0))
     {
         line = 3;
         column = 3;
@@ -142,7 +142,7 @@ bool wxEcMatrix::SetValue(unsigned int line, unsigned int column, double value, 
 double wxEcMatrix::GetValue(unsigned int line, unsigned int column, bool checkboundaries)
 {
     double *pointer = GetCellPointer(line, column, checkboundaries);
-    return (pointer == NULL ? 0 : *pointer );
+    return (pointer == NULL ? 0.0 : *pointer);
 }
 
 double* wxEcMatrix::GetCellPointer(unsigned int line, unsigned int column, bool checkboundaries)
@@ -163,7 +163,7 @@ bool wxEcMatrix::ExchangeLines(unsigned int line1, unsigned int line2)
 
     from = GetCellPointer(line1, 1);
     to = GetCellPointer(line2, 1);
-    if ((from==0) || (to==0))
+    if ((from == 0) || (to == 0))
         return false;
 
     for (k=0 ; k<m_column ; k++)
@@ -224,7 +224,7 @@ bool wxEcMatrix::Hadamard()
         return false;
     else
     {
-        Clear(1);
+        Clear(1.0);
         if (m_column > 1)
             for (k=2 ; k<=m_column ; k++)
             {
@@ -253,7 +253,7 @@ bool wxEcMatrix::Hilbert()
 bool wxEcMatrix::GaussianFilter(unsigned char radius, double sigma)
 {
     int px, py;
-    if ((sigma == 0) || (radius == 0))
+    if ((sigma == 0.0) || (radius == 0))
         return false;
     SetDimensionality(2*radius+1, 2*radius+1);
     for (px=-radius ; px<=radius ; px++)
@@ -265,7 +265,7 @@ bool wxEcMatrix::GaussianFilter(unsigned char radius, double sigma)
 bool wxEcMatrix::LaplacianOfGaussianFilter(unsigned char radius, double sigma)
 {
     int px, py;
-    if ((sigma == 0) || (radius == 0))
+    if ((sigma == 0.0) || (radius == 0))
         return false;
     SetDimensionality(2*radius+1, 2*radius+1);
     for (px=-radius ; px<=radius ; px++)
@@ -342,7 +342,7 @@ unsigned int wxEcMatrix::ReplaceValue(double oldvalue, double newvalue)
         //-- Computes known determinants
         size = matrix->GetDimensionality();
         if (size.x != size.y)
-            return 0;
+            return 0.0;
         pointer = matrix->GetData();
         if (size.x == 1)
         {
@@ -360,7 +360,7 @@ unsigned int wxEcMatrix::ReplaceValue(double oldvalue, double newvalue)
         }
 
         //-- Generic formula for NxN matrixes
-        result = 0;
+        result = 0.0;
         xsign = 1;
         for (i=1 ; i<=size.y ; i++)
         {
@@ -404,7 +404,7 @@ bool wxEcMatrix::GaussianElimination(wxEcMatrix* solution)
     sub = SubMatrix(1, 1, m_line, m_line);
     m = sub->Determinant();
     wxDELETE(sub);
-    if (m == 0)
+    if (m == 0.0)
         return false;
 
     //-- Downward
@@ -412,7 +412,7 @@ bool wxEcMatrix::GaussianElimination(wxEcMatrix* solution)
     {
         //-- Pivot must be 1
         m = GetValue(cursor, cursor, false);
-        if (m != 1)
+        if (m != 1.0)
             for (kcolumn=cursor ; kcolumn<=m_column ; kcolumn++)
                 SetValue(cursor, kcolumn, GetValue(cursor,kcolumn)/m);
 

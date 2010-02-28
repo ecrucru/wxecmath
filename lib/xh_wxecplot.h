@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file xh_wxecplot.h
  * \brief XRC support for wxEcPlot
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date March 2009
  *
  * This header is useful to register class wxEcPlot into the XRC parser.

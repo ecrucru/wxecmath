@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_engine.h
  * \brief Contains the mathematical interpreter
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date August 2008
  *
  * The only class defined here is wxEcEngine and does not derive from another class.
@@ -72,7 +72,7 @@ class WXDLLEXPORT wxEcEngine
         double ConvertToRadian(double angle);
         long FindConstant(wxString name);
         long FindOperator(wxString *expression);
-        size_t Function2ID(wxString *function);
+        unsigned long Function2ID(wxString *function);
         wxString FunctionLookUp(wxString *expression, size_t bracketPosition);
         bool IsOperator(wxString *expression, size_t charPosition);
         bool IsParitySign(wxString *expression, size_t charPosition);

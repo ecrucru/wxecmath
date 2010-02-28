@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,14 +46,14 @@ void wxEcAxis::Validate()
     }
     if (MinValue == MaxValue)
     {
-        MinValue = -10;
-        MaxValue = 10;
-        StepValue = 1;
+        MinValue = -10.0;
+        MaxValue = 10.0;
+        StepValue = 1.0;
     }
-    if (StepValue < 0)
+    if (StepValue < 0.0)
         StepValue = -StepValue;
     if (StepValue > MaxValue-MinValue)
-        StepValue = (MaxValue-MinValue)/10;
+        StepValue = (MaxValue-MinValue)/10.0;
 }
 
 void wxEcAxis::Recalibrate()
@@ -64,9 +64,9 @@ void wxEcAxis::Recalibrate()
 
 void wxEcAxis::Reset()
 {
-    MinValue = -10;
-    MaxValue = 10;
-    StepValue = 1;
+    MinValue = -10.0;
+    MaxValue = 10.0;
+    StepValue = 1.0;
 }
 
 //------------------------------------------
@@ -88,7 +88,7 @@ void wxEcCurve::Validate()
 
 void wxEcCurve::Parse(wxString def, bool isPolar)
 {
-    /*    The allowed syntaxes are :
+    /*    Allowed syntaxes are :
             - cartesian :                            1+x
             - cartesian, restricted to a domain :    1+x $ -3 4
             - parametric (x;y$domain) :              1+t ; -1+t^2 $ -10 10
@@ -121,13 +121,13 @@ void wxEcCurve::Parse(wxString def, bool isPolar)
             curvcalc.SetFormula(buffer);
             this->RangeMin = curvcalc.Compute();
             if (curvcalc.GetLastError() != wxECE_NOERROR)
-                this->RangeMin = -10;
+                this->RangeMin = -10.0;
             //-- Evaluate the upper limit
             buffer = domain.AfterFirst(wxT(' '));
             curvcalc.SetFormula(buffer);
             this->RangeMax = curvcalc.Compute();
             if (curvcalc.GetLastError() != wxECE_NOERROR)
-                this->RangeMax = 10;
+                this->RangeMax = 10.0;
         }
     }
     else
@@ -234,14 +234,14 @@ void wxEcPlot::SetUnit(double perpixel, bool forX)
         perpixel = -perpixel;
     if (forX)
     {
-        m_axisx.MinValue = -w*perpixel/2;
-        m_axisx.MaxValue = w*perpixel/2;
+        m_axisx.MinValue = -w*perpixel/2.0;
+        m_axisx.MaxValue = w*perpixel/2.0;
         m_axisx.Recalibrate();
     }
     else
     {
-        m_axisy.MinValue = -h*perpixel/2;
-        m_axisy.MaxValue = h*perpixel/2;
+        m_axisy.MinValue = -h*perpixel/2.0;
+        m_axisy.MaxValue = h*perpixel/2.0;
         m_axisy.Recalibrate();
     }
 }
@@ -306,7 +306,7 @@ double wxEcPlot::YToValue(int Y)
 
 void wxEcPlot::DoDrawAxis(wxDC *context)
 {
-    if (m_locked)
+    if (m_locked || (context==NULL))
         return;
     wxPoint axisArrow[3];
 
@@ -348,6 +348,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
             }
 
             //-- Draws the r-circles references (relative to X only)
+            context->SetFont(m_axisy.Font);
             gridStep = m_axisx.StepValue;
             if ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX)
                 gridStep = (m_axisx.MaxValue - m_axisx.MinValue)/wxECD_STEPSMAX;
@@ -444,7 +445,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
 
 void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
 {
-    if (m_locked || !curve->Defined || !curve->Enabled)
+    if (m_locked || (context==NULL) || !curve->Defined || !curve->Enabled)
         return;
     switch (curve->Type)
     {
@@ -480,7 +481,7 @@ void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
     }
     else
     {
-        MinX = 0;
+        MinX = 0.0;
         MaxX = w;
     }
     if (MinX > MaxX)
@@ -531,7 +532,9 @@ void wxEcPlot::DoDrawCurve(wxDC *context, wxEcCurve *curve)
 
 void wxEcPlot::DoDrawParametricCurve(wxDC *context, wxEcCurve *curve)
 {
-    if (m_locked || !curve->Defined || !curve->Enabled || ((curve->Type!=wxECT_PARAMETRIC) && (curve->Type!=wxECT_POLAR)) || !curve->RangeEnabled)
+    if (m_locked || (context==NULL) || (curve==NULL))
+        return;
+    if (!curve->Defined || !curve->Enabled || ((curve->Type!=wxECT_PARAMETRIC) && (curve->Type!=wxECT_POLAR)) || !curve->RangeEnabled)
         return;
     curve->Validate();
 
@@ -615,7 +618,9 @@ void wxEcPlot::DoDrawPolarCurve(wxDC *context, wxEcCurve *curve)
 
 void wxEcPlot::DoDrawCloud(wxDC *context, wxEcCurve *curve)
 {
-    if (m_locked || !curve->Defined || !curve->Enabled || (curve->Type!=wxECT_CLOUD) || (curve->Cloud==NULL))
+    if (m_locked || (context==NULL) || (curve==NULL))
+        return;
+    if (!curve->Defined || !curve->Enabled || (curve->Type!=wxECT_CLOUD) || (curve->Cloud==NULL))
         return;
     wxRealPoint data;
 
@@ -659,7 +664,7 @@ void wxEcPlot::DoDrawCloud(wxDC *context, wxEcCurve *curve)
 
 void wxEcPlot::DoDrawReticule(wxDC *context)
 {
-    if (!m_reticulevisible)
+    if (!m_reticulevisible || (context==NULL))
         return;
     //-- Initializes
     int w, h;
@@ -679,8 +684,8 @@ void wxEcPlot::DoRedraw()
         return;
     int i;
 
-    m_ymaxfound = 0;
-    m_yminfound = 0;
+    m_ymaxfound = 0.0;
+    m_yminfound = 0.0;
     m_ymarker = false;
 
     wxPaintDC DC(this);

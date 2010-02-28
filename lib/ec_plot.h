@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_plot.h
  * \brief Includes the area to draw curves
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date September 2008
  *
  * To use a wxEcPlot, you must include wxEcEngine in your project.
@@ -72,7 +72,7 @@ class WXDLLEXPORT wxEcAxis
          * \param showvalues The visibility of the text of the axis.
          * \remarks Format, Font and ArrowSize is automatically defined ;
          */
-        wxEcAxis(double min = -10, double max = 10, double step = 2, wxColour colour = *wxRED, bool visible = true, bool showvalues=true)
+        wxEcAxis(double min = -10.0, double max = 10.0, double step = 2.0, wxColour colour = *wxRED, bool visible = true, bool showvalues=true)
             : MinValue(min), MaxValue(max), StepValue(step), Colour(colour), Visible(visible),
               ShowValues(showvalues), Format(wxT("%.1f")), ArrowSize(6),
               Font(wxFont(8, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false)) { }
@@ -127,8 +127,8 @@ class WXDLLEXPORT wxEcCurve
                         int boldness = 2,
                         bool usedots = false,
                         bool userange = false,
-                        double minrange = -10,
-                        double maxrange = 10,
+                        double minrange = -10.0,
+                        double maxrange = 10.0,
                         unsigned long numpoints = wxECD_RESOLUTION,
                         wxRealPoint* data = NULL)
             :
@@ -395,16 +395,16 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         //-- Background & Axis
         /** Gets the colour of the background.
          */
-        wxColour GetBackgroundColour() { return m_backgroundcolour; }
+        inline wxColour GetBackgroundColour() { return m_backgroundcolour; }
         /** Sets the colour of the background.
          */
-        void SetBackgroundColour(wxColour value) { m_backgroundcolour = value; }
+        inline void SetBackgroundColour(wxColour value) { m_backgroundcolour = value; }
         /** Indicates if the control have a black border.
          */
-        bool GetFlatBorder() { return m_flatborder; };
+        inline bool GetFlatBorder() { return m_flatborder; };
         /** Sets a solid border to the control, or not.
          */
-        void SetFlatBorder(bool value) { m_flatborder = value; }
+        inline void SetFlatBorder(bool value) { m_flatborder = value; }
         /** Resets the grid.
          */
         void SetDefaultGrid()
@@ -416,32 +416,32 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         }
         /** Returns the visibility of the grid
          */
-        bool GetGridVisible() { return m_gridvisible; }
+        inline bool GetGridVisible() { return m_gridvisible; }
         /** Sets the visibility of the grid
          */
-        void SetGridVisible(bool value) { m_gridvisible = value; }
+        inline void SetGridVisible(bool value) { m_gridvisible = value; }
         /** Returns \a true if the grid is polar.
          */
-        bool GetGridPolar() { return m_gridpolar; }
+        inline bool GetGridPolar() { return m_gridpolar; }
         /** Defines a polar mode (\a true) or a cartesian mode (\a false)
          */
-        void SetGridPolar(bool value) { m_gridpolar = value; }
+        inline void SetGridPolar(bool value) { m_gridpolar = value; }
         /** Gets the colour of the grid.
          */
-        wxColour GetGridColour() { return m_gridcolour; }
+        inline wxColour GetGridColour() { return m_gridcolour; }
         /** Sets the colour of the grid
          */
-        void SetGridColour(wxColour value) { m_gridcolour = value; }
+        inline void SetGridColour(wxColour value) { m_gridcolour = value; }
 
         /** Gives a pointer to the axis currently used for X or Y.
          * \param forX true returns for X, false returns for Y
          */
-        wxEcAxis* GetAxis(bool forX) { return (forX ? &m_axisx : &m_axisy); }
+        inline wxEcAxis* GetAxis(bool forX) { return (forX ? &m_axisx : &m_axisy); }
         /** Applies a new configuration to the designed axis.
          * \param axis The new definition.
          * \param forX If \a true, X-axis will be modified, else it will be the Y-axis.
          */
-        void SetAxis(wxEcAxis axis, bool forX=true) { if (forX) m_axisx = axis; else m_axisy = axis; }
+        inline void SetAxis(wxEcAxis axis, bool forX=true) { if (forX) m_axisx = axis; else m_axisy = axis; }
         /** Fits the Y-axis to make all the enabled curves visible.
          *  You cannot use this function if the curves have not been drawn at least one time.
          *  Use Refresh() to do so.
@@ -472,7 +472,7 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         bool FitXAxis()
         {
             wxRealPoint point;
-            double newMin=0, newMax=0;
+            double newMin=0.0, newMax=0.0;
             bool initialized = false;
             unsigned int i, j;
 
@@ -507,11 +507,11 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         /** Returns the maximal value of Y found during the last refresh.
          * \see FitYAxis()
          */
-        double GetYMax() { if (m_ymarker) return m_ymaxfound; else return 0; }
+        inline double GetYMax() { if (m_ymarker) return m_ymaxfound; else return 0; }
         /** Returns the minimal value of Y found during the last refresh.
          * \see FitYAxis()
          */
-        double GetYMin() { if (m_ymarker) return m_yminfound; else return 0; }
+        inline double GetYMin() { if (m_ymarker) return m_yminfound; else return 0; }
         /** This function solves YPerPixel()=XPerPixel(). The grid will look like
          *  squares and right angles are possible.
          * \param symetrical If \a false, Ymax will be adjusted.
@@ -574,19 +574,19 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
          * \param x The X-coordinate.
          * \param y The Y-coordinate.
          */
-        void SetReticule(double x, double y) { m_reticule = wxRealPoint(x,y); }
+        inline void SetReticule(double x, double y) { m_reticule = wxRealPoint(x,y); }
         /** Gets the visibility of the reticule.
          */
-        bool GetReticuleVisible() { return m_reticulevisible; }
+        inline bool GetReticuleVisible() { return m_reticulevisible; }
         /** Sets the visibility of the reticule.
          */
-        void SetReticuleVisible(bool value) { m_reticulevisible = value; }
+        inline void SetReticuleVisible(bool value) { m_reticulevisible = value; }
         /** Gets the colour of the reticule.
          */
-        wxColour GetReticuleColour() { return m_reticulecolour; }
+        inline wxColour GetReticuleColour() { return m_reticulecolour; }
         /** Sets the colour of the grid.
          */
-        void SetReticuleColour(wxColour value) { m_reticulecolour = value; }
+        inline void SetReticuleColour(wxColour value) { m_reticulecolour = value; }
 
         //-- Events
         /** The event when a repaint is called.

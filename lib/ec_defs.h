@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
  * provided will help you to set up a new project very quickly.
  *
  * The four main interests of \a wxEcMath are :
- *      - interesting features, principally the parser of mathematic expressions
+ *      - interesting features, principally the parser of mathematical expressions
  *      - multi-platform
  *      - support of ANSI and UNICODE
  *      - rich documentation and samples
@@ -58,7 +58,7 @@
  * To compile the library, you just need to include it in your workspace.
  * There is no makefile, and no shared library.
  *
- * Depending on your needs, you will have the include header files. New
+ * Depending on your needs, you will have to include header files. New
  * names begin with prefix "wxEc". If you don't need a class, don't include
  * the associated header file.
  * \code
@@ -76,13 +76,17 @@
  *  {
  *      double result;
  *      wxEcEngine calc;
- *      calc.SetFormula(wxT("3+4"));
- *      result = calc.Compute();
- *      if (calc.GetLastError() == wxECE_NOERROR)
- *          ; //well done !
+ *      if (calc.SetFormula(wxT("3+4")))
+ *      {
+ *          result = calc.Compute();
+ *          if (calc.GetLastError() == wxECE_NOERROR)
+ *              ; //well done !
+ *          else
+ *              wxLogError(calc.TranslateError(calc.GetLastError()));
+ *              //better luck next time !
+ *      }
  *      else
  *          wxLogError(calc.TranslateError(calc.GetLastError()));
- *          //better luck next time !
  *  }
  * \endcode
  *
@@ -128,13 +132,13 @@
  * \code
  *  {
  *      wxEcMatrix matA(2,2), matB(2,1), matC;
- *      matA.SetValue(1,1, 1);      //the first parameter is the n-th line
- *      matA.SetValue(1,2, 2);      //the second paramater is the n-th column
- *      matA.SetValue(2,1, 3);      //the third parameter is the value of the designated cell
- *      matA.SetValue(2,2, 4);
- *      matB.SetValue(1,1, 5);
- *      matB.SetValue(2,1, -6);
- *      matC = matA * matC;
+ *      matA.SetValue(1,1, 1.0);      //the first parameter is the n-th line
+ *      matA.SetValue(1,2, 2.0);      //the second paramater is the n-th column
+ *      matA.SetValue(2,1, 3.0);      //the third parameter is the value of the designated cell
+ *      matA.SetValue(2,2, 4.0);
+ *      matB.SetValue(1,1, 5.0);
+ *      matB.SetValue(2,1, -6.0);
+ *      matC = matA * matB;
  *      wxMessageDialog(NULL, matC.DumpAsString()).ShowModal();
  *  }
  * \endcode
@@ -195,7 +199,7 @@
  *      .
  * If no domain is given, default values will be chosen. The use of the range will be set accordingly.
  *
- * When you parse an expression, a default colour is randomly chosen among twenty pre-definied colours.
+ * When you parse an expression, a default colour is randomly chosen among twenty pre-defined colours.
  * It is a good thing to randomize this automatic choice in your \a wxApp::OnInit() :
  * \code
  *  srand(time(NULL));
@@ -342,8 +346,8 @@
  * The official download center is SourceForge.net
  *
  * \pre
- *  wxEcMath - version 0.6.2 <br>
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+ *  wxEcMath - version 0.6.3 <br>
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  * \pre
  *  This program is free software; you can redistribute it and/or modify
@@ -369,7 +373,7 @@
  * \file ec_defs.h
  * \brief Definition of the simpliest classes and constants
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date August 2008
  *
  * Implements the definition of core elements needed by the wxEcMath classes.
@@ -425,7 +429,7 @@
 /** \def wxECD_VERSION
  * Version of the software currently used.
  */
-#define        wxECD_VERSION                wxT("0.6.2")
+#define        wxECD_VERSION                wxT("0.6.3")
 /** \def wxECD_AVERAGESPEED
  * Average computations you can make in 1 second.
  * Allows you to predict the time needed in complex algorithms.
@@ -440,7 +444,7 @@
 #ifdef wxECM_USEDEBUG
     #define    wxECD_AVERAGESPEED           9000        //per second, arbitrary because the function to evaluate can be complex
 #else
-    #define    wxECD_AVERAGESPEED           28000
+    #define    wxECD_AVERAGESPEED           29000
 #endif
 
 //--------------- ENGINE -------------------
@@ -462,7 +466,7 @@
  */
 #define        wxECD_EXTRASYMBOLS           wxT("().#")
 /** \def wxECD_PERMITTED
- * The allowed ANSI characters are defined here.
+ * Allowed ANSI characters are defined here.
  * Since 0.6.1, you can define a constant with the name of your choice.
  * It means you can use a chinese or japanese name if you have enabled "UNICODE".
  * This choice is automatically performed.
@@ -477,7 +481,7 @@
 
 
 /** \struct wxEcPosition
- *  \brief Stores an expression and two indexes (Start/End)
+ *  \brief Stores an expression and two indexes (From/To)
  *
  * This structure is only used by wxEcEngine to mark the position of two brackets in an expression.
  * Normally, you are not expected to need this resource.
@@ -485,8 +489,8 @@
  */
 typedef struct wxEcPosition
 {
-    long Start;             /**< A start position. */
-    long End;               /**< An end position. */
+    long From;              /**< Beginning of the tagged area. */
+    long To;                /**< End of the tagged area. */
     wxString Function;      /**< The expression. */
 } wxEcPosition;
 

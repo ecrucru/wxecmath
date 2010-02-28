@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -119,7 +119,6 @@ void wxHistogramFrame::OnMenuLoadClick(wxCommandEvent& event)
     //-- Declarations
     wxImage image;
     int R, G, B, i, x, y, maxY;
-    wxImage::HSVValue HSV;
     wxFileDialog *fileDialog;
 
     //-- Opens the file
@@ -150,7 +149,6 @@ void wxHistogramFrame::OnMenuLoadClick(wxCommandEvent& event)
                 R = image.GetRed(x,y);
                 G = image.GetGreen(x,y);
                 B = image.GetBlue(x,y);
-                HSV = image.RGBtoHSV(wxImage::RGBValue(R,G,B));
 
                 histoR[R].y++;
                 histoG[G].y++;
@@ -161,11 +159,11 @@ void wxHistogramFrame::OnMenuLoadClick(wxCommandEvent& event)
     wxDELETE(fileDialog);
 
     //-- Define the curves
-    //                 X              Y              Type       Colour                W  Dots   Range  Min  Max  Pts  Data
-    curveR = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxRED,               1, false, false, 0,   256, 256, &(histoR[0]));
-    curveG = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxGREEN,             1, false, false, 0,   256, 256, &(histoG[0]));
-    curveB = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLUE,              1, false, false, 0,   256, 256, &(histoB[0]));
-    curveN = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLACK,             1, false, false, 0,   256, 256, &(histoN[0]));
+    //                 X              Y              Type         Colour    W  Dots   Range  Min  Max  Pts  Data
+    curveR = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxRED,   1, false, false, 0,   256, 256, &(histoR[0]));
+    curveG = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxGREEN, 1, false, false, 0,   256, 256, &(histoG[0]));
+    curveB = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLUE,  1, false, false, 0,   256, 256, &(histoB[0]));
+    curveN = wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLACK, 1, false, false, 0,   256, 256, &(histoN[0]));
 
     Plot->RemoveAllCurves();
     curveRID = Plot->AddCurve(curveR);

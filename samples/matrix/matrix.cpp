@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ wxMatrixFrame::wxMatrixFrame(wxWindow *parent) : wxFrame(parent, wxID_ANY, wxT("
             SSizer->Add(m_view, 0, wxALL, 0);
         VSizer->Add(m_viewscroller, 2, wxALL|wxEXPAND, 5);
 
-        wxBoxSizer *BSizer= new wxBoxSizer(wxHORIZONTAL);
+        wxBoxSizer *BSizer = new wxBoxSizer(wxHORIZONTAL);
             wxBoxSizer *BLSizer = new wxBoxSizer(wxVERTICAL);
                 m_fitbutton = new wxButton(this, ID_FITBUTTON, wxT("Fit"), wxDefaultPosition, wxSize(40,-1));
                 BLSizer->Add(m_fitbutton, 0, wxALL, 5);
@@ -168,12 +168,12 @@ wxMatrixFrame::wxMatrixFrame(wxWindow *parent) : wxFrame(parent, wxID_ANY, wxT("
     //Y
     m_plot->GetAxis(false)->MinValue = 0;
     m_plot->GetAxis(false)->ShowValues = false;
-    //Curves                    X              Y              Type       Colour     W  Dots   Range  Min  Max  Pts  Data
+    //Curves                    X              Y              Type         Colour    W  Dots   Range  Min Max  Pts  Data
     m_plot->RemoveAllCurves();
-    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxRED,    1, false, false, 0,   256, 256, m_vision.GetRedData()) );
-    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxGREEN,  1, false, false, 0,   256, 256, m_vision.GetGreenData()) );
-    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLUE,   1, false, false, 0,   256, 256, m_vision.GetBlueData()) );
-    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLACK,  1, false, false, 0,   256, 256, m_vision.GetGreyData()) );
+    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxRED,   1, false, false, 0,  256, 256, m_vision.GetRedData()) );
+    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxGREEN, 1, false, false, 0,  256, 256, m_vision.GetGreenData()) );
+    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLUE,  1, false, false, 0,  256, 256, m_vision.GetBlueData()) );
+    m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLACK, 1, false, false, 0,  256, 256, m_vision.GetGreyData()) );
     m_plot->Refresh();
 
     //-- Events
@@ -493,7 +493,7 @@ void wxMatrixFrame::OnMenuClick(wxCommandEvent& event)
             break;
 
         case wxID_ABOUT:
-            wxMessageDialog(this, wxT("Matrix - Demo\n(C) 2008-2009\n\nhttp://sourceforge.net/projects/wxecmath/"), wxT("About..."), wxOK|wxICON_INFORMATION).ShowModal();
+            wxMessageDialog(this, wxT("Matrix - Demo\n(C) 2008-2010\n\nhttp://sourceforge.net/projects/wxecmath/"), wxT("About..."), wxOK|wxICON_INFORMATION).ShowModal();
             break;
     }
 }

@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ size_t ProcessConsole()
 {
     //-- Initialization
     wxChar userBuffer[wxCONSOLEBUFFER+1];
+    wxString userBufferStr;
     wxEcEngine *calc;
     wxArrayString calcDump;
     double result;
@@ -95,11 +96,12 @@ size_t ProcessConsole()
     calc = new wxEcEngine();
     calc->UseDebug(true);
 
-    uniPrint(wxT("***********************************************************\n\n\
-     %s %s - Sample: console\n\n\
-     Online: %s\n\n\
+    uniPrint(wxT("\n\
+  %s %s - Sample: console\n\
+  %s\n\n\
 ***********************************************************\n\n\
-   \"exit\" to quit, \"ans\" to call the last result.\n\n"), wxECD_SOFTWARE, wxECD_VERSION, wxECD_URL);
+   \"exit\" to quit, \"ans\" to call the last result.\n\
+   Never use space character !\n\n\n"), wxECD_SOFTWARE, wxECD_VERSION, wxECD_URL);
 
 RedoConsole:
         uniPrint(wxT("> "));
@@ -108,19 +110,36 @@ RedoConsole:
 
         if ((userBuffer[0]!=wxT('e')) || (userBuffer[1]!=wxT('x')) || (userBuffer[2]!=wxT('i')) || (userBuffer[3]!=wxT('t')))
         {
-            calc->SetFormula(wxString(userBuffer));
-            result = calc->Compute();
-            calc->SetConstant(wxT("ans"), result);
-
+            userBufferStr = wxString(userBuffer);
+            if (userBufferStr.StartsWith(wxT("-")))
+                uniPrint(wxT("! Make sure you didn't want to write \"ans-this\"\n"));
+            else
+                if (userBufferStr.StartsWith(wxT("+")) || userBufferStr.StartsWith(wxT("/")) || userBufferStr.StartsWith(wxT("*")))
+                {
+                    userBufferStr = wxT("ans") + userBufferStr;
+                    uniPrint(wxT("! \"ans\" added automatically\n"), result);
+                }
+            calc->SetFormula(userBufferStr);
+            if (calc->GetLastError() == wxECE_NOERROR)
+            {
+                result = calc->Compute();
+                if (calc->GetLastError() == wxECE_NOERROR)
+                    calc->SetConstant(wxT("ans"), result);
+            }
+            else
+                result = 0.0;
 
             #ifdef wxECM_USEDEBUG
                 uniPrint(wxT("\n"));
                 calcDump = calc->GetLog();
                 for (i=0 ; i<calcDump.GetCount() ; i++)
                     uniPrint(wxT("     | %s\n"), calcDump.Item(i).Trim(false).Trim(true).c_str());
-                uniPrint(wxT("     |\n     | %s\n\nResult = %f\n\n"), calc->TranslateError(calc->GetLastError()).c_str(), result);
+                uniPrint(wxT("     |\n     | %s\n     | Tip : %s\n\nResult = %f\n\n"), calc->TranslateError(calc->GetLastError()).c_str(), calc->GetIndicator().c_str(), result);
             #else
-                uniPrint(wxT("%f\n\n"), result);
+                if (calc->GetLastError() == wxECE_NOERROR)
+                    uniPrint(wxT("< %f\n\n"), result);
+                else
+                    uniPrint(wxT("X %s\n\n"), calc->TranslateError(calc->GetLastError()).c_str());
             #endif
             goto RedoConsole;
         }

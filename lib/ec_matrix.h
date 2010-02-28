@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_matrix.h
  * \brief Matrix manager
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date February 2009
  *
  * The matrix is a represented by a 1-dimension array of doubles.
@@ -114,7 +114,7 @@ class WXDLLEXPORT wxEcMatrix
         /** Sets the value of a cell of the matrix.
          * \param line The line starting from 1.
          * \param column The column starting from 1.
-		 * \param value The value to store at the given coordinate.
+         * \param value The value to store at the given coordinate.
          * \param checkboundaries If \a true, parameters will be checked against errors.
          */
         bool SetValue(unsigned int line, unsigned int column, double value, bool checkboundaries = true);
@@ -136,13 +136,13 @@ class WXDLLEXPORT wxEcMatrix
         /** Returns a pointer of the one-dimension array containing the data.
          *  The orientation is top->bottom and left->right.
          */
-        double* GetData() { return m_data; }
+        inline double* GetData() { return m_data; }
         /** Copies values into the matrix from an external source of data.
          * \remarks The same amount of cells will be copied. Make sure your array
          *          is of the right dimension. Once done, you can destroy your array
          *          because no link will be established.
          */
-        void SetData(double* source) { Copy(source, m_data, m_line*m_column); }
+        inline void SetData(double* source) { Copy(source, m_data, m_line*m_column); }
         /** Exchange two lines.
          * \param line1 The first line starting from 1.
          * \param line2 The second line starting from 1.
@@ -159,7 +159,7 @@ class WXDLLEXPORT wxEcMatrix
         /** Fills the matrix with zeros (by default) or with the parameter.
          * \param defaultvalue New value of the cells.
          */
-        void Clear(double defaultvalue = 0);
+        void Clear(double defaultvalue = 0.0);
         /** Square matrix with ones on the main diagonal and zeros elsewhere.
          * \return \a true if the matrix is square, else \a false.
          */
@@ -258,7 +258,7 @@ class WXDLLEXPORT wxEcMatrix
                 for (i=1 ; i<=m_line ; i++)
                     for (j=1 ; j<=m_column ; j++)
                     {
-                        value = 0;
+                        value = 0.0;
                         for (k=1 ; k<=sizeA.y ; k++)
                             value += matrix->GetValue(i,k) * GetValue(k,j);
                         m_databackup[(i-1)*m_column + (j-1)] = value;
@@ -275,21 +275,21 @@ class WXDLLEXPORT wxEcMatrix
         double Convolve(wxEcMatrix* lefthandside)
         {
             unsigned int k;
-            double rsl;
+            double result;
             wxEcUPoint sizeA;
             double *fromA;
 
             if (lefthandside == NULL)
-                return 0;
+                return 0.0;
             if (!IsSameDimensionality(lefthandside))
-                return 0;
+                return 0.0;
 
-            rsl = 0;
+            result = 0.0;
             fromA = lefthandside->GetCellPointer(1, 1, false);
             for (k=0 ; k<m_line*m_column ; k++)
-                rsl += fromA[k] * m_data[m_line*m_column-k-1];
+                result += fromA[k] * m_data[m_line*m_column-k-1];
 
-            return rsl;
+            return result;
         }
         /** Sums two matrixes. If the dimensions are not the same, nothing will happen.
          * \remarks This operator is optimized for speed. No boundaries check is performed.
@@ -350,7 +350,7 @@ class WXDLLEXPORT wxEcMatrix
                 for (i=1 ; i<=sizeB.x ; i++)
                     for (j=1 ; j<=sizeB.y ; j++)
                     {
-                        value = 0;
+                        value = 0.0;
                         for (k=1 ; k<=m_column ; k++)
                             value += m_data[(i-1)*m_column + (k-1)] * fromB[(k-1)*sizeB.y + (j-1)];
                         toR[(i-1)*sizeB.y + (j-1)] = value;

@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.2
- *  Copyright (C) 2008-2009, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.3
+ *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_complex.h
  * \brief Manages complex numbers
  * \author ecrucru
- * \version 0.6.2
+ * \version 0.6.3
  * \date January 2009
  *
  * This file defines a class to manage complex numbers. They have a real
@@ -70,7 +70,7 @@ class WXDLLEXPORT wxEcComplex
 
         /** The default constructor with initialization to zero.
          */
-        wxEcComplex() : Re(0), Im(0) {}
+        wxEcComplex() : Re(0.0), Im(0.0) {}
         /** The extended constructor.
          * \param real The real part.
          * \param imaginary The imaginary part.
@@ -95,17 +95,17 @@ class WXDLLEXPORT wxEcComplex
         double Argument()
         {
             double buffer;
-            if ((Re == 0) && (Im == 0))
-                return 0;
-            else if (Re == 0)
-                return (Im > 0 ? M_PI/2 : -M_PI/2);
-            else if (Im == 0)
-                return (Re > 0 ? 0 : M_PI);
+            if ((Re == 0.0) && (Im == 0.0))
+                return 0.0;
+            else if (Re == 0.0)
+                return (Im > 0.0 ? M_PI/2.0 : -M_PI/2.0);
+            else if (Im == 0.0)
+                return (Re > 0.0 ? 0.0 : M_PI);
             else
             {   // damned !
                 buffer = atan(Im/Re);
-                if (Re < 0)
-                    if (Im > 0)
+                if (Re < 0.0)
+                    if (Im > 0.0)
                         buffer += M_PI;
                     else
                         buffer -= M_PI;
@@ -126,7 +126,7 @@ class WXDLLEXPORT wxEcComplex
             if (usePolarNotation)
                 return wxString::Format(wxT("%f*e^%fi"), Modulus(), Argument());
             else
-                return wxString::Format(wxT("%f%s%fi"), Re, (Im<0 ? wxEmptyString : wxT("+")), Im);
+                return wxString::Format(wxT("%f%s%fi"), Re, (Im < 0.0 ? wxEmptyString : wxT("+")), Im);
         }
 
         //------------------------------------------
@@ -149,7 +149,7 @@ class WXDLLEXPORT wxEcComplex
 
     static double sign(double value)
     {
-        return (value<0 ? -1 : 1);
+        return (value<0.0 ? -1.0 : 1.0);
     }
 
     /** Square elevation. */
@@ -161,7 +161,7 @@ class WXDLLEXPORT wxEcComplex
     /** Root square in the complex domain. */
     static wxEcComplex sqrt(wxEcComplex cpx)
     {
-        return wxEcComplex(sqrt(2*(cpx.Modulus()+cpx.Re))/2 , sign(cpx.Im)*sqrt(2*(cpx.Modulus()-cpx.Re))/2);
+        return wxEcComplex(sqrt(2.0*(cpx.Modulus()+cpx.Re))/2.0 , sign(cpx.Im)*sqrt(2.0*(cpx.Modulus()-cpx.Re))/2.0);
     }
 
     /** Exponential function in the complex domain. */
@@ -171,11 +171,11 @@ class WXDLLEXPORT wxEcComplex
     }
 
     /** Natural logarithm in the complex domain.
-	 * \remarks The library uses log() commonly used in C++.
-	 */
+     * \remarks The library uses log() commonly used in C++.
+     */
     static wxEcComplex log(wxEcComplex cpx)
     {
-        return wxEcComplex(log(cpx.Re*cpx.Re + cpx.Im*cpx.Im)/2 , sign(cpx.Im)*M_PI/2 - atan(cpx.Re/cpx.Im));
+        return wxEcComplex(log(cpx.Re*cpx.Re + cpx.Im*cpx.Im)/2.0 , sign(cpx.Im)*M_PI/2.0 - atan(cpx.Re/cpx.Im));
     }
 
     /** Cosine in the complex domain. */
@@ -193,25 +193,25 @@ class WXDLLEXPORT wxEcComplex
     /** Tangent in the complex domain. */
     static wxEcComplex tan(wxEcComplex cpx)
     {
-        return wxEcComplex(sin(2*cpx.Re)/(cos(2*cpx.Re)+cosh(2*cpx.Im)) , sinh(2*cpx.Im)/(cos(2*cpx.Re)+cosh(2*cpx.Im)));
+        return wxEcComplex(sin(2.0*cpx.Re)/(cos(2.0*cpx.Re)+cosh(2.0*cpx.Im)) , sinh(2.0*cpx.Im)/(cos(2.0*cpx.Re)+cosh(2.0*cpx.Im)));
     }
 
     /** Cosecant in the complex domain. */
     static wxEcComplex csc(wxEcComplex cpx)
     {
-        return wxEcComplex(-2*cosh(cpx.Im)*sin(cpx.Re)/(cos(2*cpx.Re)-cosh(2*cpx.Im)) , 2*cos(cpx.Re)*sinh(cpx.Im)/(cos(2*cpx.Re)-cosh(2*cpx.Im)));
+        return wxEcComplex(-2.0*cosh(cpx.Im)*sin(cpx.Re)/(cos(2.0*cpx.Re)-cosh(2.0*cpx.Im)) , 2.0*cos(cpx.Re)*sinh(cpx.Im)/(cos(2.0*cpx.Re)-cosh(2.0*cpx.Im)));
     }
 
     /** Secant in the complex domain. */
     static wxEcComplex sec(wxEcComplex cpx)
     {
-        return wxEcComplex(2*cos(cpx.Re)*cosh(cpx.Im)/(cos(2*cpx.Re)+cosh(2*cpx.Im)) , 2*sin(cpx.Re)*sinh(cpx.Im)/(cos(2*cpx.Re)+cosh(2*cpx.Im)));
+        return wxEcComplex(2.0*cos(cpx.Re)*cosh(cpx.Im)/(cos(2.0*cpx.Re)+cosh(2.0*cpx.Im)) , 2.0*sin(cpx.Re)*sinh(cpx.Im)/(cos(2.0*cpx.Re)+cosh(2.0*cpx.Im)));
     }
 
     /** Cotangent in the complex domain. */
     static wxEcComplex cot(wxEcComplex cpx)
     {
-        return wxEcComplex(-sin(2*cpx.Re)/(cos(2*cpx.Re)-cosh(2*cpx.Im)) , sinh(2*cpx.Im)/(cos(2*cpx.Re)-cosh(2*cpx.Im)));
+        return wxEcComplex(-sin(2.0*cpx.Re)/(cos(2.0*cpx.Re)-cosh(2.0*cpx.Im)) , sinh(2.0*cpx.Im)/(cos(2.0*cpx.Re)-cosh(2.0*cpx.Im)));
     }
 
     /** Hyperbolic cosine in the complex domain. */
@@ -229,25 +229,25 @@ class WXDLLEXPORT wxEcComplex
     /** Hyperbolic tangent in the complex domain. */
     static wxEcComplex tanh(wxEcComplex cpx)
     {
-        return wxEcComplex(sinh(2*cpx.Re)/(cos(2*cpx.Im)+cosh(2*cpx.Re)) , sin(2*cpx.Im)/(cos(2*cpx.Im)+cosh(2*cpx.Re)));
+        return wxEcComplex(sinh(2.0*cpx.Re)/(cos(2.0*cpx.Im)+cosh(2.0*cpx.Re)) , sin(2.0*cpx.Im)/(cos(2.0*cpx.Im)+cosh(2.0*cpx.Re)));
     }
 
     /** Hyperbolic cosecant in the complex domain. */
     static wxEcComplex csch(wxEcComplex cpx)
     {
-        return wxEcComplex(-2*cos(cpx.Im)*sinh(cpx.Re)/(cos(2*cpx.Im)-cosh(2*cpx.Re)) , 2*cosh(cpx.Re)*sin(cpx.Im)/(cos(2*cpx.Im)-cosh(2*cpx.Re)));
+        return wxEcComplex(-2.0*cos(cpx.Im)*sinh(cpx.Re)/(cos(2.0*cpx.Im)-cosh(2.0*cpx.Re)) , 2.0*cosh(cpx.Re)*sin(cpx.Im)/(cos(2.0*cpx.Im)-cosh(2.0*cpx.Re)));
     }
 
     /** Hyperbolic secant in the complex domain. */
     static wxEcComplex sech(wxEcComplex cpx)
     {
-        return wxEcComplex(2*cos(cpx.Im)*cosh(cpx.Re)/(cos(2*cpx.Im)+cosh(2*cpx.Re)) , -2*sin(cpx.Im)*sinh(cpx.Re)/(cos(2*cpx.Im)+cosh(2*cpx.Re)));
+        return wxEcComplex(2.0*cos(cpx.Im)*cosh(cpx.Re)/(cos(2.0*cpx.Im)+cosh(2.0*cpx.Re)) , -2.0*sin(cpx.Im)*sinh(cpx.Re)/(cos(2.0*cpx.Im)+cosh(2.0*cpx.Re)));
     }
 
     /** Hyperbolic cotangent in the complex domain. */
     static wxEcComplex coth(wxEcComplex cpx)
     {
-        return wxEcComplex(-sinh(2*cpx.Re)/(cos(2*cpx.Im)-cosh(2*cpx.Re)) , sin(2*cpx.Im)/(cos(2*cpx.Im)-cosh(2*cpx.Re)));
+        return wxEcComplex(-sinh(2.0*cpx.Re)/(cos(2.0*cpx.Im)-cosh(2.0*cpx.Re)) , sin(2.0*cpx.Im)/(cos(2.0*cpx.Im)-cosh(2.0*cpx.Re)));
     }
 
 #endif
