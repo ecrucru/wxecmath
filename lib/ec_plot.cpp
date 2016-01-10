@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+#ifndef _CONSOLE
 
 #include "ec_plot.h"
 
@@ -58,8 +60,9 @@ void wxEcAxis::Validate()
 
 void wxEcAxis::Recalibrate()
 {
-    if ((MaxValue - MinValue) / StepValue > wxECD_STEPSMAX)
-        StepValue = (MaxValue - MinValue)/wxECD_STEPSMAX;
+    if (MaxValue > MinValue)
+        if ((MaxValue - MinValue) / StepValue > wxECD_STEPSMAX)
+            StepValue = (MaxValue - MinValue)/wxECD_STEPSMAX;
 }
 
 void wxEcAxis::Reset()
@@ -214,12 +217,12 @@ wxEcPlot::~wxEcPlot()
     wxDELETE(m_engine);
 }
 
-void wxEcPlot::OnPaint(wxPaintEvent &event)
+void wxEcPlot::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
-    DoRedraw();
+    DoRedraw(true);
 }
 
-void wxEcPlot::OnResize(wxSizeEvent &event)
+void wxEcPlot::OnResize(wxSizeEvent& WXUNUSED(event))
 {
     Refresh();
 }
@@ -350,7 +353,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
             //-- Draws the r-circles references (relative to X only)
             context->SetFont(m_axisy.Font);
             gridStep = m_axisx.StepValue;
-            if ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX)
+            if ((gridStep == 0.) || ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX))
                 gridStep = (m_axisx.MaxValue - m_axisx.MinValue)/wxECD_STEPSMAX;
             rmax = wxMax(wxEcAbs(m_axisx.MinValue), wxEcAbs(m_axisx.MaxValue));
             r = wxMin(0, wxMin(wxEcAbs(m_axisx.MinValue), wxEcAbs(m_axisx.MaxValue)));
@@ -373,7 +376,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
             //-- Vertical
             context->SetFont(m_axisx.Font);
             gridStep = m_axisx.StepValue;
-            if ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX)
+            if ((gridStep == 0.) || ((m_axisx.MaxValue - m_axisx.MinValue) / gridStep > wxECD_STEPSMAX))
                 gridStep = (m_axisx.MaxValue - m_axisx.MinValue)/wxECD_STEPSMAX;
             gridPosition = ceil((m_axisx.MinValue-gridStep) / gridStep)*gridStep;
             while (gridPosition < m_axisx.MaxValue)
@@ -389,7 +392,7 @@ void wxEcPlot::DoDrawAxis(wxDC *context)
             //-- Horizontal
             context->SetFont(m_axisy.Font);
             gridStep = m_axisy.StepValue;
-            if ((m_axisy.MaxValue - m_axisy.MinValue) / gridStep > wxECD_STEPSMAX)
+            if ((gridStep == 0.) || ((m_axisy.MaxValue - m_axisy.MinValue) / gridStep > wxECD_STEPSMAX))
                 gridStep = (m_axisy.MaxValue - m_axisy.MinValue)/wxECD_STEPSMAX;
             gridPosition = ceil((m_axisy.MinValue-gridStep) / gridStep)*gridStep;
             while (gridPosition < m_axisy.MaxValue)
@@ -678,8 +681,9 @@ void wxEcPlot::DoDrawReticule(wxDC *context)
     context->DrawEllipse(retPos.x-wxECD_RETICULESIZE, retPos.y-wxECD_RETICULESIZE, 2*wxECD_RETICULESIZE+1, 2*wxECD_RETICULESIZE+1);
 }
 
-void wxEcPlot::DoRedraw()
+void wxEcPlot::DoRedraw(bool fromEventPaint)
 {
+    wxDC *DC;
     if (m_locked)
         return;
     int i;
@@ -688,17 +692,21 @@ void wxEcPlot::DoRedraw()
     m_yminfound = 0.0;
     m_ymarker = false;
 
-    wxPaintDC DC(this);
-    DoDrawAxis(&DC);
+    if (fromEventPaint)
+        DC = new wxPaintDC(this);
+    else
+        DC = new wxClientDC(this);
+    DoDrawAxis(DC);
     for (i=0 ; i<wxECD_CURVEMAX ; i++)
         if (m_curves[i].Defined)
         {
             m_engine->DeleteConstant(wxT("x"));
             m_engine->DeleteConstant(wxT("y"));
             m_engine->DeleteConstant(wxT("t"));
-            DoDrawCurve(&DC, &(m_curves[i]));
+            DoDrawCurve(DC, &(m_curves[i]));
         }
-    DoDrawReticule(&DC);
+    DoDrawReticule(DC);
+    delete DC;              //No need for wxDELETE since the pointer doesn't need to be nulled at that moment
 }
 
 bool wxEcPlot::DrawTangent(int index, double wishx)
@@ -787,3 +795,5 @@ bool wxEcPlot::DrawDerivative(int index)
     }
     return true;
 }
+
+#endif //_CONSOLE

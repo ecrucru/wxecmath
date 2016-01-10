@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_matrix.h
  * \brief Matrix manager
  * \author ecrucru
- * \version 0.6.3
+ * \version 0.6.4
  * \date February 2009
  *
  * The matrix is a represented by a 1-dimension array of doubles.
@@ -77,7 +77,7 @@ class WXDLLEXPORT wxEcMatrix
          * \param data Pointer to an array[] of doubles which will be recopied
          *             to initialize the object. Parameter is ignored if NULL.
          */
-        wxEcMatrix(unsigned int line, unsigned column, double* data = NULL);
+        wxEcMatrix(unsigned int line, unsigned int column, double* data = NULL);
         wxEcMatrix();
         /** The default destructor.
          */
@@ -98,7 +98,7 @@ class WXDLLEXPORT wxEcMatrix
          * \param column New number of columns.
          * \warning If \a line or \a column is null, the dimension will be forced to 3x3.
          */
-        void SetDimensionality(unsigned int line, unsigned column);
+        void SetDimensionality(unsigned int line, unsigned int column);
         /** Another way to change the size of the matrix.
          * \param size A size encoded as wxEcUPoint.
          */

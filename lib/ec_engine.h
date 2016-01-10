@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_engine.h
  * \brief Contains the mathematical interpreter
  * \author ecrucru
- * \version 0.6.3
+ * \version 0.6.4
  * \date August 2008
  *
  * The only class defined here is wxEcEngine and does not derive from another class.
@@ -138,7 +138,7 @@ class WXDLLEXPORT wxEcEngine
         void SetTrigonometricMode(int trigmode) { m_trigomode = trigmode; }
         /** Resets the engine.
          * \param formulaToo Will clear the formula set with SetFormula().
-         * \param constantsToo Will restaure the default constants.
+         * \param constantsToo Will restore the default constants.
          */
         void Reset(bool formulaToo, bool constantsToo);
 
@@ -151,29 +151,47 @@ class WXDLLEXPORT wxEcEngine
          * \param expression Input to convert.
          * \param destination Pointer to a double where to store the value.
          * \return \a true if the constant is found and converted, \a false if it is neither a valid constant nor a floating number.
-         * \remarks This function can be seen as a "wxString to Double converter". If wxString is the name
-         *          of a constant, it will look for its value. Else it tries to convert into double in the destination.
+         * \remarks This function can be seen as a "wxString to Double converter". If wxString is the name of a
+         *          constant, it will look for its value. Else it tries to convert into double in the destination.
          */
         bool GetConstant(wxString expression, double *destination);
+        /** Variant method allowing to return a default value when the expression cannot be interpreted. */
+        bool GetConstant(wxString expression, double *destination, double defaultval);
+        /** Tells if the expression exists as a variable or a number.
+         * \param expression Input to look for.
+         * \return \a true if the constant is found and converted, \a false if it is neither a valid constant nor a floating number.
+         */
+        bool HasConstant(wxString expression);
         /** Gives the number of constants currently defined.
          */
         int GetConstantCount();
+    #ifndef _CONSOLE
         /** Makes a dump of all the constants into a \a wxControlWithItems, it can be \a wxListBox, \a wxComboBox...
          * \param destination A pointer to the control which will receive the data.
+         * \param full Tells if the value should also be included.
          * \return \a true on success, \a false on failure.
          * \remarks If the result is \a true, it does not presume that at least 1 item has been added.
          *          You have to make sure on your own.
          */
-        bool ListAllConstants(wxControlWithItems *destination);
+        bool ListAllConstants(wxControlWithItems *destination, bool full = true);
+    #endif
+        /** Makes a dump of all the constants into a \a wxArrayString.
+         * \param destination A pointer to the array which will receive the data.
+         * \param full Tells if the value should also be included.
+         * \return \a true on success, \a false on failure.
+         * \remarks This function has to be used for non-GUI applications.
+         */
+        bool ListAllConstants(wxArrayString *destination, bool full = true);
         /** Defines a new constant. If the constant already exists, it will be overwritten.
+		 * \warning The name of the constant cannot begin with a figure
          * \param name The name of the new constant.
          * \param value The value of the new constant.
          * \return \a true if the constant has been (re)defined, \a false on failure.
          */
         bool SetConstant(wxString name, wxDouble value);
-        /** Deletes all the constants, and sets the default ones.
+        /** Deletes all the constants, and sets the default ones if requested.
          */
-        void ResetConstants();
+        void ResetConstants(bool pDefault = true);
 
         /** Applies a function on the given value.
          * \param function The pointer to the name of the function.

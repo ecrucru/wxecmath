@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -174,7 +174,7 @@ wxMatrixFrame::wxMatrixFrame(wxWindow *parent) : wxFrame(parent, wxID_ANY, wxT("
     m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxGREEN, 1, false, false, 0,  256, 256, m_vision.GetGreenData()) );
     m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLUE,  1, false, false, 0,  256, 256, m_vision.GetBlueData()) );
     m_plot->AddCurve( wxEcCurve(wxEmptyString, wxEmptyString, wxECT_CLOUD, *wxBLACK, 1, false, false, 0,  256, 256, m_vision.GetGreyData()) );
-    m_plot->Refresh();
+    m_plot->Redraw();
 
     //-- Events
     m_plot->Connect(wxEVT_MOTION, wxMouseEventHandler(wxMatrixFrame::OnMousePlotEvent), NULL, this);
@@ -207,11 +207,11 @@ void wxMatrixFrame::DoGUI()
 
     //-- Displays the plot
     m_vision.ComputeHistogram();
-    m_plot->Refresh();
+    m_plot->Redraw();
     ymax = m_plot->GetYMax();
     m_fitbar->SetScrollbar(ymax, ymax/20, ymax, ymax/20, true);
     m_plot->GetAxis(false)->MaxValue = ymax;
-    m_plot->Refresh();
+    m_plot->Redraw();
 
     //-- Shows the picture
     wxBitmap m_bitmap(*(m_vision.GetImage()));
@@ -249,7 +249,7 @@ void wxMatrixFrame::OnMenuClick(wxCommandEvent& event)
                 //-- The histogram will be adjusted to the default picture
                 m_plot->GetAxis(false)->Reset();
                 m_plot->FitYAxis();
-                m_plot->Refresh();
+                m_plot->Redraw();
             }
             break;
 
@@ -503,9 +503,9 @@ void wxMatrixFrame::OnButtonClick(wxCommandEvent& event)
     switch (event.GetId())
     {
         case ID_FITBUTTON:
-            m_plot->Refresh();
+            m_plot->Redraw();
             m_plot->FitYAxis();
-            m_plot->Refresh();
+            m_plot->Redraw();
             break;
     }
 }
@@ -513,7 +513,7 @@ void wxMatrixFrame::OnButtonClick(wxCommandEvent& event)
 void wxMatrixFrame::OnScrollClick(wxScrollEvent& event)
 {
     m_plot->GetAxis(false)->MaxValue = event.GetPosition();
-    m_plot->Refresh();
+    m_plot->Redraw();
 }
 
 void wxMatrixFrame::OnMousePlotEvent(wxMouseEvent& event)

@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
             newcurve.Parse(editExpression->GetValue(), checkPolar->GetValue());
             if (Plot->AddCurve(newcurve) != wxNOT_FOUND)
             {
-                Plot->Refresh();
+                Plot->Redraw();
                 DoRefreshCurveList();
             } else
                 wxMessageDialog(NULL, wxT("It seems there are too many curves loaded. So we can't add a new one."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
@@ -208,7 +208,7 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
 
             DoRefreshCurveList();
             wxMessageDialog(NULL, wxT("To enable the curves, see the listbox on your left.\nThere are small squares to tick.\n\nEnjoy !"), wxT("Information"), wxOK|wxICON_INFORMATION).ShowModal();
-            //Plot->Refresh() is not necessary, because our new curves are disabled by default.
+            //Plot->Redraw() is not necessary, because our new curves are disabled by default.
             break;
 
         case ID_DELETE:
@@ -221,7 +221,7 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
             if (buffer.BeforeFirst(wxT(':')).ToLong(&index))
             {
                 Plot->DeleteCurve(index-1);
-                Plot->Refresh();
+                Plot->Redraw();
                 DoRefreshCurveList();
                 listFunction->SetFocus();
             }
@@ -242,7 +242,7 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
                         wxMessageDialog(NULL, wxT("* You must select an enabled curve.\n* The only type of curve supported is wxECT_CARTESIAN.\n* You must respect the domain definition if the function is restricted."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
                     //To get the equation, call Plot->GetLastTangentEquation()
 
-                    //Don't call Plot->Refresh() now because it won't redraw the tangent. Here, you have just drawn the tangent
+                    //Don't call Plot->Redraw() now because it won't redraw the tangent. Here, you have just drawn the tangent
                     //as a temporary layer which will be overwritten is you move a window over the client area !
                 } else
                     wxMessageDialog(NULL, wxT("The coordinate is not correct."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
@@ -260,7 +260,7 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
             {
                 if (!Plot->DrawDerivative(index-1))
                     wxMessageDialog(NULL, wxT("You can only derivate a wxECT_CARTESIAN curve, on the right domain definition.\nSo you can be incitated to restrict the domain to be able to derivate."), wxT("Error"), wxOK|wxICON_ERROR).ShowModal();
-                //Don't call Plot->Refresh() for the same reason
+                //Don't call Plot->Redraw() for the same reason
             }
             break;
 
@@ -273,14 +273,14 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
                 Plot->GetAxis(true)->Font = fontData.GetChosenFont();
                 Plot->GetAxis(false)->Font = fontData.GetChosenFont();
                 //fontData.GetColour() is not used
-                Plot->Refresh();
+                Plot->Redraw();
             }
             wxDELETE(fontDlg);
             break;
 
         case ID_DEFAULTGRID:
             Plot->SetDefaultGrid();
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_APPLY:
@@ -298,12 +298,12 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
             axis.StepValue = (axis.MaxValue - axis.MinValue)/10;
             Plot->SetAxis(axis, false);
             //-- Show it
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_FITAXIS:
             Plot->FitYAxis();
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_RESET:
@@ -315,12 +315,12 @@ void wxPlotFrame::OnButtonClick(wxCommandEvent& event)
 
         case ID_ORTHO:
             Plot->Orthonormalize();
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_UNZOOM:
             Plot->Unzoom();
-            Plot->Refresh();
+            Plot->Redraw();
             break;
     }
 }
@@ -332,7 +332,7 @@ void wxPlotFrame::OnFuncListCheck(wxCommandEvent& event)
     {
         index--;
         Plot->GetCurve(index)->Enabled = listFunction->IsChecked(event.GetInt());
-        Plot->Refresh();
+        Plot->Redraw();
     }
 }
 
@@ -346,13 +346,13 @@ void wxPlotFrame::OnBoxCheck(wxCommandEvent& event)
     {
         case ID_SHOWGRID:
             Plot->SetGridVisible(checkShowGrid->GetValue());
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_SHOWAXIS:
             Plot->GetAxis(true)->Visible = checkShowAxis->GetValue();
             Plot->GetAxis(false)->Visible = checkShowAxis->GetValue();
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_SHOWRETICULE:
@@ -372,12 +372,12 @@ void wxPlotFrame::OnBoxCheck(wxCommandEvent& event)
                 }
             }
             Plot->SetReticuleVisible(checkReticule->GetValue());
-            Plot->Refresh();
+            Plot->Redraw();
             break;
 
         case ID_POLARGRID:
             Plot->SetGridPolar(checkPolarGrid->GetValue());
-            Plot->Refresh();
+            Plot->Redraw();
             break;
     }
 }

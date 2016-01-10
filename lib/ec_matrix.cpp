@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 //------------------------------------------
 
-wxEcMatrix::wxEcMatrix(unsigned int line, unsigned column, double* data)
+wxEcMatrix::wxEcMatrix(unsigned int line, unsigned int column, double* data)
 {
     m_data = (double*) malloc(1*sizeof(double));
     m_databackup = (double*) malloc(1*sizeof(double));
@@ -54,6 +54,7 @@ wxString wxEcMatrix::DumpAsString()
     wxString result;
     unsigned int i, j, counter=0;
 
+	result.Alloc(4*m_line + 10*m_column);
     result.Empty();
     for (i=0 ; i<m_line ; i++)
     {
@@ -87,7 +88,7 @@ void wxEcMatrix::SetDimensionality(wxEcUPoint size)
     SetDimensionality(size.x, size.y);
 }
 
-void wxEcMatrix::SetDimensionality(unsigned int line, unsigned column)
+void wxEcMatrix::SetDimensionality(unsigned int line, unsigned int column)
 {
     unsigned int i;
 
@@ -163,7 +164,7 @@ bool wxEcMatrix::ExchangeLines(unsigned int line1, unsigned int line2)
 
     from = GetCellPointer(line1, 1);
     to = GetCellPointer(line2, 1);
-    if ((from == 0) || (to == 0))
+    if ((from == NULL) || (to == NULL))
         return false;
 
     for (k=0 ; k<m_column ; k++)
@@ -396,11 +397,11 @@ bool wxEcMatrix::GaussianElimination(wxEcMatrix* solution)
     double m, *p;
     wxEcMatrix *sub = NULL;
 
-    //-- Checks the dimensions
+    //-- Checks dimensions
     if (m_line+1 != m_column)
         return false;
 
-    //-- Does a solution exists ?
+    //-- Does a solution exist ?
     sub = SubMatrix(1, 1, m_line, m_line);
     m = sub->Determinant();
     wxDELETE(sub);
@@ -452,7 +453,7 @@ bool wxEcMatrix::GaussianElimination(wxEcMatrix* solution)
 wxEcMatrix* wxEcMatrix::SubMatrix(unsigned int topline, unsigned int leftcolumn, unsigned int nbline, unsigned int nbcolumn)
 {
     unsigned int i, j;
-    wxEcMatrix *result;
+    wxEcMatrix *result = NULL;
 
     //-- Verification
     if ( !wxEcBetween(topline, 1, m_line)      || !wxEcBetween(topline+nbline-1, 1, m_line)        ||

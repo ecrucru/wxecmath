@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -243,6 +243,7 @@
  *      - ceil : the smallest integer greater than or equal to x
  *      - cub : x^3, safe way to compute such an exponent
  *      - deg : converts from radian to degree
+ *      - even : =1 if even, else =0
  *      - exp : the exponential value
  *      - hvi : Heaviside's function, =0 if x<0, =1 if x>=0
  *      - int : the largest integer less than or equal to x
@@ -251,7 +252,10 @@
  *      - ln : the neperian logarithm
  *      - lnep : see \a ln
  *      - log : the logarithm base 10
+ *      - not : =1 if =0, else =0
+ *      - odd : =1 if odd, else =0
  *      - rad : converts from degree to radian
+ *      - rand : generates a random number, modulo the given value if not null
  *      - sgn : the sign, -1 or +1. Zero returns +1.
  *      - sqr : x^2, safe way to compute such an exponent
  *      - sqrt : the root square
@@ -307,7 +311,6 @@
  * Samples are provided to show various possible uses of the library.
  *
  * They are sorted in a dedicated folder :
- *
  *      - console :
  *          - wxEcEngine
  *          .
@@ -343,11 +346,11 @@
  *
  * \a wxEcMath is released under the terms of the "GNU General Public License version 2".
  *
- * The official download center is SourceForge.net
+ * The official download center is <a href="http://sourceforge.net/projects/wxecmath/">SourceForge.net</a>.
  *
  * \pre
- *  wxEcMath - version 0.6.3 <br>
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+ *  wxEcMath - version 0.6.4 <br>
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  * \pre
  *  This program is free software; you can redistribute it and/or modify
@@ -373,7 +376,7 @@
  * \file ec_defs.h
  * \brief Definition of the simpliest classes and constants
  * \author ecrucru
- * \version 0.6.3
+ * \version 0.6.4
  * \date August 2008
  *
  * Implements the definition of core elements needed by the wxEcMath classes.
@@ -385,12 +388,11 @@
 #define ec_defs_h
 
     #if wxUSE_UNICODE
-        #pragma message("wxEcMath - Compilation mode: UNICODE")
         #define uniCStr wc_str
     #else
-        #pragma message("wxEcMath - Compilation mode: ANSI")
         #define uniCStr c_str
     #endif
+
 
 //--------------- MODES --------------------
 
@@ -429,7 +431,7 @@
 /** \def wxECD_VERSION
  * Version of the software currently used.
  */
-#define        wxECD_VERSION                wxT("0.6.3")
+#define        wxECD_VERSION                wxT("0.6.4")
 /** \def wxECD_AVERAGESPEED
  * Average computations you can make in 1 second.
  * Allows you to predict the time needed in complex algorithms.
@@ -452,7 +454,7 @@
 /** \def wxECD_OPERATORS
  * All the operators supported, ordered by mathematical priority.
  */
-#define        wxECD_OPERATORS              wxT("^/*-+")
+#define        wxECD_OPERATORS              wxT("^/*%-+")
 /** \def wxECD_ALPHABET
  * All the letters of the alphabet, written in lowercase (a-z).
  */
@@ -464,14 +466,14 @@
 /** \def wxECD_EXTRASYMBOLS
  * Extra symbols available when evaluated.
  */
-#define        wxECD_EXTRASYMBOLS           wxT("().#")
+#define        wxECD_EXTRASYMBOLS           wxT("_().#")
 /** \def wxECD_PERMITTED
  * Allowed ANSI characters are defined here.
  * Since 0.6.1, you can define a constant with the name of your choice.
  * It means you can use a chinese or japanese name if you have enabled "UNICODE".
  * This choice is automatically performed.
  */
-#define        wxECD_PERMITTED              wxT("abcdefghijklmnopqrstuvwxyz0123456789^/*-+().#")
+#define        wxECD_PERMITTED              wxT("abcdefghijklmnopqrstuvwxyz0123456789^/*%-+_().#")
 /** \def wxECD_STACKMAX
  * Maximal number of constants you may define.
  *
@@ -541,7 +543,7 @@ enum
 /** \def wxECD_STEPSMAX
  * Maximal number of graduations a plot may contain.
  */
-#define        wxECD_STEPSMAX               30
+#define        wxECD_STEPSMAX               64
 /** \def wxECD_RESOLUTION
  * Default number of points used to draw a parametric or a polar curve.
  * The value applies to a curve, not to all the curves loaded in a wxEcPlot.
@@ -573,15 +575,13 @@ enum
     wxECT_CARTESIAN = 0,    /**< Cartesian: y = f(x) */
     wxECT_PARAMETRIC,       /**< Parametric: x = f(t) && y = f(t) */
     wxECT_POLAR,            /**< Polar : r = f(t) */
-    wxECT_CLOUD               /**< Graphical representation : data from experiments, evolution of the stock exchange...*/
+    wxECT_CLOUD             /**< Graphical representation : data from experiments, evolution of the stock exchange...*/
 };
 
 //--------------- FUNCS --------------------
 
-static bool wxEcBetween(unsigned int value, unsigned int lowlimit, unsigned int highlimit)
-{
-    return ((lowlimit<=value) && (value<=highlimit));
-}
+#define wxEcBetween(value, min, max)		(((min)<=(value)) && ((value)<=(max)))
+
 
 //------------------------------------------
 

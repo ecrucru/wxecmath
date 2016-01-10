@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ size_t ProcessConsole()
     calc = new wxEcEngine();
     calc->UseDebug(true);
 
+ConsoleReset:
     uniPrint(wxT("\n\
   %s %s - Sample: console\n\
   %s\n\n\
@@ -111,6 +112,15 @@ RedoConsole:
         if ((userBuffer[0]!=wxT('e')) || (userBuffer[1]!=wxT('x')) || (userBuffer[2]!=wxT('i')) || (userBuffer[3]!=wxT('t')))
         {
             userBufferStr = wxString(userBuffer);
+			if (userBufferStr == wxT("clear"))
+			{
+			#ifdef __WINDOWS__
+				system("cls");
+			#else
+				system("clear");
+			#endif
+				goto ConsoleReset;
+			}
             if (userBufferStr.StartsWith(wxT("-")))
                 uniPrint(wxT("! Make sure you didn't want to write \"ans-this\"\n"));
             else

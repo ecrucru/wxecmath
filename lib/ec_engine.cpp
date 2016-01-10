@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -128,24 +128,43 @@ bool wxEcEngine::DeleteConstant(wxString name)
 
 bool wxEcEngine::GetConstant(wxString expression, double *destination)
 {
+    double conversion;
+	wxString expression_initial;
+
+	//-- Backup
+	expression_initial = expression;
+
+    //-- Finds by direct name
     if (m_constants.find(expression) != m_constants.end())
     {
-        *destination = m_constants[expression];
+        if (destination != NULL)
+            *destination = m_constants[expression];
         return true;
     }
     else
     {
+        //-- Finds a floating value (step 1)
         expression.Replace(wxT(","), wxT("."));
-        if (expression.ToDouble(destination))
+        if (expression.ToDouble(&conversion))
+        {
+            if (destination != NULL)
+                *destination = conversion;      //Solves the failure of ASSERT with method HasConstant()
             return true;
+        }
         else
         {
+            //-- Finds a floating value (step 21)
             expression.Replace(wxT("."), wxT(","));
-            if (expression.ToDouble(destination))
+            if (expression.ToDouble(&conversion))
+            {
+                if (destination != NULL)
+                    *destination = conversion;
                 return true;
+            }
             else
             {
-                m_indicator = expression;
+                //-- Returns as an unsolved expression
+                m_indicator = expression_initial;
                 m_errorcode = wxECE_UNDEFCONSTANT;
                 return false;
             }
@@ -153,12 +172,26 @@ bool wxEcEngine::GetConstant(wxString expression, double *destination)
     }
 }
 
+bool wxEcEngine::GetConstant(wxString expression, double *destination, double defaultval)
+{
+    bool result = GetConstant(expression, destination);
+    if (!result && (destination != NULL))
+        *destination = defaultval;
+    return result;
+}
+
 int wxEcEngine::GetConstantCount()
 {
     return m_constants.size();
 }
 
-bool wxEcEngine::ListAllConstants(wxControlWithItems *destination)
+bool wxEcEngine::HasConstant(wxString expression)
+{
+    return GetConstant(expression, NULL);
+}
+
+#ifndef _CONSOLE
+bool wxEcEngine::ListAllConstants(wxControlWithItems *destination, bool full)
 {
     if (destination == NULL)
         return false;
@@ -166,26 +199,48 @@ bool wxEcEngine::ListAllConstants(wxControlWithItems *destination)
 
     destination->Clear();
     for (i=m_constants.begin() ; i!=m_constants.end(); i++)
-        destination->Append(wxString::Format(wxT("%s = %f"), i->first.uniCStr(), i->second));
+        if (full)
+            destination->Append(wxString::Format(wxT("%s = %f"), i->first.uniCStr(), i->second));
+        else
+            destination->Append(i->first.uniCStr());
+    return true;
+}
+#endif
+
+bool wxEcEngine::ListAllConstants(wxArrayString *destination, bool full)
+{
+    if (destination == NULL)
+        return false;
+    wxEcConstMap::iterator i;
+
+    destination->Clear();
+    for (i=m_constants.begin() ; i!=m_constants.end(); i++)
+        if (full)
+            destination->Add(wxString::Format(wxT("%s = %f"), i->first.uniCStr(), i->second));
+        else
+            destination->Add(i->first.uniCStr());
     return true;
 }
 
-void wxEcEngine::ResetConstants()
+void wxEcEngine::ResetConstants(bool pDefault)
 {
     m_constants.clear();
-    SetConstant(wxT("deg"), M_PI/180.0);
-    SetConstant(wxT("e"), exp(1.0));
-    SetConstant(wxT("g"), 9.80665);
-    SetConstant(wxT("pi"), M_PI);
-    SetConstant(wxT("percent"), 0.01);
+	if (pDefault)
+	{
+		SetConstant(wxT("deg"), M_PI/180.0);
+		SetConstant(wxT("e"), exp(1.0));
+		SetConstant(wxT("g"), 9.80665);
+		SetConstant(wxT("pi"), M_PI);
+		SetConstant(wxT("percent"), 0.01);
+	}
     return;
 }
 
 bool wxEcEngine::SetConstant(wxString name, wxDouble value)
 {
+    name = name.Lower().Trim(false).Trim(true);
     if (name.IsEmpty())
         return false;
-    name = name.Lower().Trim(false).Trim(true);
     m_constants[name] = value;
     return true;
 }
@@ -348,7 +403,7 @@ bool wxEcEngine::IsParitySign(wxString *expression, size_t charPosition)
         if (charPosition == 0)
             return true;
         else
-            return (wxString(wxT("*/^(")).Find(expression->GetChar(charPosition-1)) != wxNOT_FOUND);
+            return (wxString(wxT("*/%^(")).Find(expression->GetChar(charPosition-1)) != wxNOT_FOUND);
     }
 }
 
@@ -420,8 +475,8 @@ void wxEcEngine::Simplify(wxString *expression)
         if (car == wxT('{'))        car = wxT('(');
         if (car == wxT('}'))        car = wxT(')');
         if (car == wxT(','))        car = wxT('.');
-        if (car == wxT('²'))    {   car = wxT('2'); lastCar = wxT('^'); buffer.Append(lastCar); }
-        if (car == wxT('³'))    {   car = wxT('3'); lastCar = wxT('^'); buffer.Append(lastCar); }
+        if (car == wxChar(178)) {   car = wxT('2'); lastCar = wxT('^'); buffer.Append(lastCar); }
+        if (car == wxChar(179)) {   car = wxT('3'); lastCar = wxT('^'); buffer.Append(lastCar); }
 
         //-- Sign operations
         if ((lastCar == wxT('-')) && (car == wxT('+')))
@@ -479,6 +534,9 @@ bool wxEcEngine::ApplyFunction(wxString *function, double *value)
         case 6518114: //cub
             *value = (*value) * (*value) * (*value);
             break;
+        case 1702258030: //even
+            *value = ((long)(*value) % 2 == 0);
+            break;
         case 6846057: //hvi
             if (*value < 0.0)
                 *value = 0.0;
@@ -493,6 +551,18 @@ bool wxEcEngine::ApplyFunction(wxString *function, double *value)
                 m_errorcode = wxECE_DIVBYZERO;
             else
                 *value = 1.0 / *value;
+            break;
+        case 7237492: //not
+            *value = (*value == 0 ? 1 : 0);
+            break;
+        case 7300196: //odd
+            *value = ((long)(*value) % 2 == 1);
+            break;
+        case 1918987876: //rand
+            if ((unsigned long)(*value) == 0)
+                *value = rand();
+            else
+                *value = rand() % (unsigned long)(*value);
             break;
         case 1919247220: //rect
             if ((*value >= -0.5) && (*value <= 0.5))
@@ -547,7 +617,10 @@ bool wxEcEngine::ApplyFunction(wxString *function, double *value)
             *value = sin(ConvertToRadian(*value));
             break;
         case 1936289379: //sinc
-            *value = sin(*value)/(*value);
+            if (*value == 0.0)
+                m_errorcode = wxECE_DIVBYZERO;
+            else
+                *value = sin(*value)/(*value);
             break;
         case 7627118: //tan
             *value = tan(ConvertToRadian(*value));
@@ -670,12 +743,16 @@ double wxEcEngine::evalf(wxString *expression)
     //-- Initialization
     wxString poolSign, priorities = wxECD_OPERATORS, buffer, value;
     size_t terms=0, index, j, k;
+#ifdef wxECM_USEDEBUG
     double oldPoolK;
+#endif
     struct { size_t NumDeclared; size_t ID; } sharps;
     poolSign.Clear();
 
     //-- Explodes the expression
     buffer = *expression;
+    if (buffer.Len() == 0)
+        return 0;
     if (buffer.StartsWith(wxT("-")))           //This forces "-" to be always an operator, not a simple minus indicator.
         buffer = wxT('0') + buffer;            //Try to draw "x^2" without this trick...
     #ifdef wxECM_USEDEBUG
@@ -727,8 +804,15 @@ RedoForOperator:
         k = poolSign.Find(priorities.GetChar(j));
         if (k != wxNOT_FOUND)
         {
-            oldPoolK = m_pool[k];                        //useful to log the operation
-            switch (priorities.GetChar(j))
+        #ifdef wxECM_USEDEBUG
+            oldPoolK = m_pool[k];                           //useful to log the operation
+        #endif
+
+        #if wxMAJOR_VERSION >= 3
+            switch (priorities.GetChar(j).GetValue())       //Unicode management changed in wxWidgets 3.x
+        #else
+            switch (priorities.GetChar(j)/*.GetValue()*/)   //uncomment if you have an issue with the compilation
+        #endif
             {
                 case wxT('^'):
                     m_pool[k] = PowerCalc(m_pool[k], m_pool[k+1]);
@@ -741,6 +825,9 @@ RedoForOperator:
                     break;
                 case wxT('*'):
                     m_pool[k] = m_pool[k] * m_pool[k+1];
+                    break;
+                case wxT('%'):
+                    m_pool[k] = (long)(m_pool[k]) % (unsigned long)(m_pool[k+1]);
                     break;
                 case wxT('+'):
                     m_pool[k] = m_pool[k] + m_pool[k+1];

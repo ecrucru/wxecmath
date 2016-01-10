@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_complex.h
  * \brief Manages complex numbers
  * \author ecrucru
- * \version 0.6.3
+ * \version 0.6.4
  * \date January 2009
  *
  * This file defines a class to manage complex numbers. They have a real
@@ -89,7 +89,7 @@ class WXDLLEXPORT wxEcComplex
         {
             return sqrt(Re*Re + Im*Im);
         }
-        /** Return the argument of the complex number.
+        /** Returns the argument of the complex number.
          * \remarks (0,0) will return 0 even if the value should be undefined.
          */
         double Argument()

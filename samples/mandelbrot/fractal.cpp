@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -210,9 +210,9 @@ void wxFractalFrame::DoComputeMandelbrot()
     }
 
     //-- Updates the GUI
-    m_plot->Refresh();
+    m_plot->Redraw();
     m_plot->FitYAxis();
-    m_plot->Refresh();
+    m_plot->Redraw();
     wxBitmap m_bitmap(m_image);
     m_view->SetBitmap(m_bitmap);
 }

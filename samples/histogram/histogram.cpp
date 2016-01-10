@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ void wxHistogramFrame::DoRefresh()
     Plot->GetCurve(curveGID)->Enabled = CheckGreen->GetValue();
     Plot->GetCurve(curveBID)->Enabled = CheckBlue->GetValue();
     Plot->GetCurve(curveNID)->Enabled = CheckGray->GetValue();
-    Plot->Refresh();
+    Plot->Redraw();
 }
 
 void wxHistogramFrame::OnMenuLoadClick(wxCommandEvent& event)
@@ -180,7 +180,7 @@ void wxHistogramFrame::OnFitClick(wxCommandEvent& event)
 {
     Plot->GetAxis(false)->Reset();
     Plot->FitYAxis();
-    Plot->Refresh();
+    Plot->Redraw();
 }
 
 void wxHistogramFrame::OnMenuQuitClick(wxCommandEvent& event)

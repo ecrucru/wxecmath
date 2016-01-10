@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * \file ec_plot.h
  * \brief Includes the area to draw curves
  * \author ecrucru
- * \version 0.6.3
+ * \version 0.6.4
  * \date September 2008
  *
  * To use a wxEcPlot, you must include wxEcEngine in your project.
@@ -61,7 +61,7 @@ class WXDLLEXPORT wxEcAxis
         wxColour Colour;        /**< The colour of the axis. */
         bool ShowValues;        /**< The visibility of the text of the axis. */
         wxFont Font;            /**< The font used to display the text. */
-        int ArrowSize;          /**< */
+        int ArrowSize;          /**< The size of the arrow on the axis. */
 
         /** The default constructor.
          * \param min The lower limit of the axis.
@@ -73,9 +73,17 @@ class WXDLLEXPORT wxEcAxis
          * \remarks Format, Font and ArrowSize is automatically defined ;
          */
         wxEcAxis(double min = -10.0, double max = 10.0, double step = 2.0, wxColour colour = *wxRED, bool visible = true, bool showvalues=true)
-            : MinValue(min), MaxValue(max), StepValue(step), Colour(colour), Visible(visible),
-              ShowValues(showvalues), Format(wxT("%.1f")), ArrowSize(6),
-              Font(wxFont(8, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false)) { }
+            : MinValue(min), MaxValue(max), StepValue(step), Format(wxT("%.1f")), Visible(visible),
+              Colour(colour), ShowValues(showvalues),
+              Font(wxFont(8, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false)),
+			  ArrowSize(6)
+        {
+            wxASSERT(StepValue > 0);
+            wxASSERT(min < max);
+
+            if (StepValue <= 0)
+                StepValue = 1;
+        }
         /** The default destructor.
          */
         ~wxEcAxis() { }
@@ -133,17 +141,10 @@ class WXDLLEXPORT wxEcCurve
                         wxRealPoint* data = NULL)
             :
                         Defined(true), Enabled(true),
-                        ExpressionX(formulaX),
-                        ExpressionY(formulaY),
-                        Type(typeofcurve),
-                        Colour(pencolour),
-                        Width(boldness),
-                        DotStyle(usedots),
-                        RangeEnabled(userange),
-                        RangeMin(minrange),
-                        RangeMax(maxrange),
-                        NumPoints(numpoints),
-                        Cloud(data)
+                        ExpressionX(formulaX), ExpressionY(formulaY), Type(typeofcurve),
+                        Colour(pencolour), Width(boldness), DotStyle(usedots),
+                        RangeEnabled(userange), RangeMin(minrange), RangeMax(maxrange),
+                        NumPoints(numpoints), Cloud(data)
             {}
         /** The default destructor.
          */
@@ -202,20 +203,17 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         void DoDrawPolarCurve(wxDC *context, wxEcCurve *curve);
         void DoDrawCloud(wxDC *context, wxEcCurve *curve);
         void DoDrawReticule(wxDC *context);
-        void DoRedraw();
+        void DoRedraw(bool fromEventPaint);
 
     public:
         //-- Herited functions (to make them documented by Doxygen)
-        /** Refreshes the component and processes the queued messages.
-         * \warning This function is overriden from wxWindow and will cause wxTheApp->Yield() to be called.
-         *          If wxEcPlot doesn't do so, you will never able to call FitYAxis(), GetYMin() and GetYMax()
-         *          correctly in a busy process.
-         * \remark Update() is not overriden.
+        /**
+         * Refresh only works when your component is visible. With this method, you can force the
+         * redraw even if your component is not visible.
          */
-        void Refresh()
+        void Redraw()
         {
-            wxWindow::Refresh();
-            wxTheApp->Yield();
+            DoRedraw(false);
         }
 
         //-- Normal behaviour
@@ -276,11 +274,34 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         {
             int i;
             for (i=0 ; i<wxECD_CURVEMAX ; i++)
+            {
                 if (!m_curves[i].Defined)
+                {
                     if (SetCurve(i, &curve))
                         return i;
                     else
                         return wxNOT_FOUND;
+                }
+            }
+            return wxNOT_FOUND;
+        }
+        /** Adds a new curve.
+         * \param curve Pointer to an object defining the curve to add.
+         * \return \a wxNOT_FOUND if memory is exceeded, a positive or null value on success.
+         */
+        int AddCurve(wxEcCurve* curve)
+        {
+            int i;
+            for (i=0 ; i<wxECD_CURVEMAX ; i++)
+            {
+                if (!m_curves[i].Defined)
+                {
+                    if (SetCurve(i, curve))
+                        return i;
+                    else
+                        return wxNOT_FOUND;
+                }
+            }
             return wxNOT_FOUND;
         }
         /** Returns the number of curves currently defined.
@@ -398,7 +419,7 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
         inline wxColour GetBackgroundColour() { return m_backgroundcolour; }
         /** Sets the colour of the background.
          */
-        inline void SetBackgroundColour(wxColour value) { m_backgroundcolour = value; }
+        inline bool SetBackgroundColour(const wxColour& value) { m_backgroundcolour = value; return true; }
         /** Indicates if the control have a black border.
          */
         inline bool GetFlatBorder() { return m_flatborder; };
@@ -476,7 +497,7 @@ class WXDLLEXPORT wxEcPlot : public wxWindow
             bool initialized = false;
             unsigned int i, j;
 
-            //-- Action !
+            //-- Action
             for (i=0 ; i<wxECD_CURVEMAX ; i++)
                 if ((m_curves[i].Defined) && (m_curves[i].Type==wxECT_CLOUD) && (m_curves[i].NumPoints>1))
                     for (j=0 ; j<m_curves[i].NumPoints ; j++)

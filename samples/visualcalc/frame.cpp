@@ -1,6 +1,6 @@
 
-/*  wxEcMath - version 0.6.3
- *  Copyright (C) 2008-2010, http://sourceforge.net/projects/wxecmath/
+/*  wxEcMath - version 0.6.4
+ *  Copyright (C) 2008-2015, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -539,7 +539,7 @@ void wxCalcFrame::OnMenuClick(wxCommandEvent& event)
             About.SetName(wxECD_SOFTWARE);
             About.SetIcon(wxIcon(icon_xpm));
             About.SetVersion(wxString::Format(wxT("v%s"), wxECD_VERSION));
-            About.SetCopyright(wxT("Copyright © 2008-2010, ecrucru"));
+            About.SetCopyright(wxT("Copyright © 2008-2015, ecrucru"));
             About.SetDescription(wxT(" "));
             About.SetWebSite(wxECD_URL);
             #if wxUSE_UNICODE
