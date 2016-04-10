@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.4
+/*  wxEcMath - version 0.6.5
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -349,7 +349,7 @@
  * The official download center is <a href="http://sourceforge.net/projects/wxecmath/">SourceForge.net</a>.
  *
  * \pre
- *  wxEcMath - version 0.6.4 <br>
+ *  wxEcMath - version 0.6.5 <br>
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  * \pre
@@ -376,7 +376,7 @@
  * \file ec_defs.h
  * \brief Definition of the simpliest classes and constants
  * \author ecrucru
- * \version 0.6.4
+ * \version 0.6.5
  * \date August 2008
  *
  * Implements the definition of core elements needed by the wxEcMath classes.
@@ -431,7 +431,7 @@
 /** \def wxECD_VERSION
  * Version of the software currently used.
  */
-#define        wxECD_VERSION                wxT("0.6.4")
+#define        wxECD_VERSION                wxT("0.6.5")
 /** \def wxECD_AVERAGESPEED
  * Average computations you can make in 1 second.
  * Allows you to predict the time needed in complex algorithms.

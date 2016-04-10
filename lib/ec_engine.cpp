@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.4
+/*  wxEcMath - version 0.6.5
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -492,8 +492,8 @@ void wxEcEngine::Simplify(wxString *expression)
         }
         if ((wxString(wxECD_NUMERIC).Find(lastCar)!=wxNOT_FOUND) && (car==wxT('(')))
             buffer.Append(wxT("*"));
-        if ((wxString(wxECD_NUMERIC).Find(lastCar)!=wxNOT_FOUND) && (wxString(wxECD_ALPHABET).Find(car)!=wxNOT_FOUND))
-            buffer.Append(wxT("*"));
+        /*-v065 if ((wxString(wxECD_NUMERIC).Find(lastCar)!=wxNOT_FOUND) && (wxString(wxECD_ALPHABET).Find(car)!=wxNOT_FOUND))
+            buffer.Append(wxT("*")); */
 
         //-- Char validated
         #if wxUSE_UNICODE

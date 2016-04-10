@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.4
+/*  wxEcMath - version 0.6.5
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  * \file ec_plot.h
  * \brief Includes the area to draw curves
  * \author ecrucru
- * \version 0.6.4
+ * \version 0.6.5
  * \date September 2008
  *
  * To use a wxEcPlot, you must include wxEcEngine in your project.

@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.4
+/*  wxEcMath - version 0.6.5
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  * \file ec_engine.h
  * \brief Contains the mathematical interpreter
  * \author ecrucru
- * \version 0.6.4
+ * \version 0.6.5
  * \date August 2008
  *
  * The only class defined here is wxEcEngine and does not derive from another class.
@@ -204,7 +204,7 @@ class WXDLLEXPORT wxEcEngine
          * \return The result of the computation. Zero is the default value if it failed.
          * \see GetLastResult()
          */
-        double Compute();
+        virtual double Compute();
         /** Performs an approximation of the derivative of the loaded expression at a given point.
          * \param where The X-coordinate which must be evaluated.
          * \param result The pointer to the floating number which will contain df(x)/dx. It must be valid.
@@ -226,7 +226,7 @@ class WXDLLEXPORT wxEcEngine
          * \param expression The formula you want to use.
          * \return \a true if the formula is accepted, \a false if it is rejected.
          */
-        bool SetFormula(wxString expression);
+        virtual bool SetFormula(wxString expression);
         /** Performs the simplifications required to make the expression readable by the interpreter.
          *  You cannot expect all inputs to be valid after this operation. It depends on the quality
          *  of the input (in terms of wrong syntax).

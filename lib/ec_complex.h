@@ -1,5 +1,5 @@
 
-/*  wxEcMath - version 0.6.4
+/*  wxEcMath - version 0.6.5
  *  Copyright (C) 2008-2016, http://sourceforge.net/projects/wxecmath/
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  * \file ec_complex.h
  * \brief Manages complex numbers
  * \author ecrucru
- * \version 0.6.4
+ * \version 0.6.5
  * \date January 2009
  *
  * This file defines a class to manage complex numbers. They have a real
